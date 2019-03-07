@@ -20,17 +20,16 @@ class g_queue {
     g_queue() {}
 
     void push(T const& value) {
-      cout << "hfosih";
       unique_lock<mutex> lock(this->q_mutex);
       queue.push_front(value);
     }
 
     T pop() {
       unique_lock<mutex> lock(this->q_mutex);
-      this->isEmpty.wait(lock, [=]{ return !this->is_empty(); });
+      this->isEmpty.wait(lock, [=] {return !queue.empty();});
+      T ret = this->queue.back();
       this->queue.pop_back();
-      T rc(move(this->queue.back()));
-      return rc;
+      return ret;
     }
 
     bool is_empty() {
@@ -41,14 +40,17 @@ class g_queue {
 
 int main(int argc, char * argv[]) {
 
-  g_queue<int> Q = g_queue<int>(1);
+  g_queue<int> *Q = new g_queue<int>();
 
   for (int i=0; i<10; i++) {
-    Q.push(i);
+    Q->push(i);
   }
 
+  cout << "inserted\n";
+
   for (int i=0; i<10; i++) {
-    cout << Q.pop();
+    int val = Q->pop();
+    cout << val << "\n";
   }
 
   return(0);
