@@ -22,6 +22,7 @@ class g_queue {
     void push(T const& value) {
       unique_lock<mutex> lock(this->q_mutex);
       queue.push_front(value);
+      this->isEmpty.notify_one();
     }
 
     T pop() {
