@@ -3,36 +3,70 @@
 #include <chrono>
 #include <mutex>
 #include <vector>
+#include <cstdlib>
 #include "queue.hpp"
 
 using namespace std;
 
 typedef enum {
-  Produce,
-  Add,
-  Square,
-  Sub,
-  Print
+  produce = 0,
+  add = 1,
+  square = 2,
+  sub = 3,
+  print = 4
 } TaskType;
 
-void body(TaskType type) {
+g_queue<int> queues [4];
+
+int compute(TaskType type, int val) {
   switch(type) {
-    case Produce:
+    case add:
+      val++;
       break;
-    case Add:
+    case square:
+      val = val*val;
       break;
-    case Square:
+    case sub:
+      val--;
       break;
-    case Sub:
+    }
+    return val;
+}
+
+auto execute(TaskType type, int n) {
+  int data;
+  switch(type) {
+    case produce:
+      for (int i=0; i<n; i++) {
+        queues[0].push(rand());
+        this_thread::sleep_for(10ms);
+      }
       break;
-    case Print:
+    case print:
+      while() {
+        data = queues[type-1].pop();
+        this_thread::sleep_for(10ms);
+        cout << data << "\n";
+      }
+      break;
+    default:
+      while() {
+        data = queues[type-1].pop();
+        this_thread::sleep_for(10ms);
+        queues[type].push(compute(type, data));
+      }
       break;
   }
 }
 
-
 int main(int argc, char const *argv[]) {
   int n = atoi(argv[1]);
-  vector<g_queue>
 
+  thread*[5] threads;
+
+  threads[0] = new thread(Produce, n);
+  threads[1] = new thread(Add, n);
+  threads[2] = new thread(Square, n);
+  threads[3] = new thread(Sub, n);
+  threads[4] = new thread(Print, n);
 }
