@@ -37,21 +37,3 @@ class g_queue {
       return(this->queue.empty());
     }
 };
-
-int main(int argc, char * argv[]) {
-
-  g_queue<int> *Q = new g_queue<int>();
-
-  for (int i=0; i<10; i++) {
-    Q->push(i);
-  }
-
-  cout << "inserted\n";
-
-  for (int i=0; i<10; i++) {
-    int val = Q->pop();
-    cout << val << "\n";
-  }
-
-  return(0);
-}

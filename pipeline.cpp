@@ -3,6 +3,7 @@
 #include <chrono>
 #include <mutex>
 #include <vector>
+#include "queue.hpp"
 
 using namespace std;
 
@@ -32,5 +33,6 @@ void body(TaskType type) {
 
 int main(int argc, char const *argv[]) {
   int n = atoi(argv[1]);
+  vector<g_queue>
 
 }
