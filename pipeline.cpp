@@ -39,7 +39,6 @@ void body(TaskType type, int n) {
     //primo stadio: genera un numero tra 1 e 10 e lo inserisce nella prima coda
     case produce:
       for (int i=0; i<n+1; i++) {
-        cout << "producing\n";
         if (i==n)
           //inserisco 0 per terminare i thread
           queues[0].push(0);
@@ -50,7 +49,6 @@ void body(TaskType type, int n) {
       break;
     //ultimo stadio: prende i numeri dall'ultima coda e li stampa
     case print:
-      cout << "printer working\n";
       while(1) {
         data = queues[type-1].pop();
         if (data != 0) {
@@ -69,8 +67,10 @@ void body(TaskType type, int n) {
           this_thread::sleep_for(10ms);
           queues[type].push(compute(type, data));
         }
-        else
+        else {
+          queues[type].push(0);
           break;
+        }
       }
       break;
   }
@@ -89,7 +89,7 @@ void body(TaskType type, int n) {
   this_thread::sleep_for(1s);
   threads.push_back(new thread(body, produce, n));
 
-  for (int i=0; i<2; i++) {
-    threads[i]->join();
+  for (auto &t: threads) {
+    t->join();
   }
 }
