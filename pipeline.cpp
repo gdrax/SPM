@@ -94,18 +94,12 @@ int main(int argc, char const *argv[]) {
   vector<thread*> threads;
 
   chrono::high_resolution_clock::time_point tstart = chrono::high_resolution_clock::now();
+  threads.push_back(new thread(body, produce, n));
   threads.push_back(new thread(body, add, n));
   threads.push_back(new thread(body, square, n));
   threads.push_back(new thread(body, sub, n));
   threads.push_back(new thread(body, print, n));
   chrono::high_resolution_clock::time_point tend = chrono::high_resolution_clock::now();
-
-  //avvio il primo stadio dopo 1 sec così tutti gli altri si sono sospesi sulle code
-  this_thread::sleep_for(1s);
-
-  chrono::high_resolution_clock::time_point tstart2 = chrono::high_resolution_clock::now();
-  threads.push_back(new thread(body, produce, n));
-  chrono::high_resolution_clock::time_point tend2 = chrono::high_resolution_clock::now();
 
   for (auto &t: threads) {
     t->join();
@@ -114,7 +108,7 @@ int main(int argc, char const *argv[]) {
   //tempo di completamento da quando viene inserito il primo numero a quando viene prodotto l'ultimo risultato
   chrono::duration<double> elapsed = chrono::duration_cast<chrono::duration<double>>(finish - start);
   //tempo speso per la creazione dei thread
-  chrono::duration<double> telapsed = chrono::duration_cast<chrono::duration<double>>(tend - tstart + tend2 - tstart2);
+  chrono::duration<double> telapsed = chrono::duration_cast<chrono::duration<double>>(tend - tstart);
 
   cout << "ELapsed time: " << elapsed.count() << "\n";
   cout << "Thread creation time: " << telapsed.count() << "\n";
