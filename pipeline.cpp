@@ -6,6 +6,7 @@
 #include <mutex>
 #include <vector>
 #include <cstdlib>
+#include <sched.h>
 #include "queue.hpp"
 
 using namespace std;
@@ -21,6 +22,9 @@ typedef enum {
 
 //code tra gli stadi della pipeline
 g_queue<int> queues [4];
+
+//0: auto scheduling, 1: stick threads to cores
+int mode = 0;
 
 chrono::high_resolution_clock::time_point start, finish;
 
@@ -43,25 +47,28 @@ int compute(TaskType type, int val) {
 //codice eseguito dai thread
 void body(TaskType type, int n) {
   int data;
+  this_thread::sleep_for(20ms);
   switch(type) {
     //primo stadio: genera un numero tra 1 e 10 e lo inserisce nella prima coda
     case produce:
       start = chrono::high_resolution_clock::now();
       for (int i=0; i<n+1; i++) {
+        cout << "Thread #" << type << " on CPU n." << sched_getcpu() << "\n";
         if (i==n)
           //inserisco 0 per terminare i thread
           queues[0].push(0);
         else
           queues[0].push(rand()%10+1);
-        this_thread::sleep_for(10ms);
+        this_thread::sleep_for(100ms);
       }
       break;
     //ultimo stadio: prende i numeri dall'ultima coda e li stampa
     case print:
       while(1) {
+        cout << "Thread #" << type << " on CPU n." << sched_getcpu() << "\n";
         data = queues[type-1].pop();
         if (data != 0) {
-          this_thread::sleep_for(10ms);
+          this_thread::sleep_for(100ms);
           cout << data << "\n";
         }
         else {
@@ -73,9 +80,10 @@ void body(TaskType type, int n) {
     //stadio intermedio: prende i numeri dalla coda precedente applica la funzione e li inserisce nella coda successiva
     default:
       while(1) {
+        cout << "Thread #" << type << " on CPU n." << sched_getcpu() << "\n";
         data = queues[type-1].pop();
         if (data != 0) {
-          this_thread::sleep_for(10ms);
+          this_thread::sleep_for(100ms);
           queues[type].push(compute(type, data));
         }
         else {
@@ -89,7 +97,14 @@ void body(TaskType type, int n) {
 }
 
 int main(int argc, char const *argv[]) {
-  int n = atoi(argv[1]);
+
+  if (argc != 3) {
+    cout << "pipeline [MODE] [INPUTS]\nMODE->\n   0: Auto scheduling\n   1: Stick threads to cores\nINPUTS->\n   number of inputs for the pipeline\n";
+    return -1;
+  }
+
+  mode = atoi(argv[1]);
+  int n = atoi(argv[2]);
 
   vector<thread*> threads;
 
@@ -100,6 +115,15 @@ int main(int argc, char const *argv[]) {
   threads.push_back(new thread(body, sub, n));
   threads.push_back(new thread(body, print, n));
   chrono::high_resolution_clock::time_point tend = chrono::high_resolution_clock::now();
+
+  cpu_set_t cpuset;
+  if (mode == 1) {
+    CPU_ZERO(&cpuset);
+    for (int i=0; i<4; i++) {
+      CPU_SET(i, &cpuset);
+      pthread_setaffinity_np(threads[i]->native_handle(), sizeof(cpu_set_t), &cpuset);
+    }
+  }
 
   for (auto &t: threads) {
     t->join();
