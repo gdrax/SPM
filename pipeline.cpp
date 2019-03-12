@@ -24,9 +24,9 @@ typedef enum {
 g_queue<int> queues [4];
 
 //0: auto scheduling, 1: stick threads to cores
-int mode = 0;
+int mode = 0, isf = 1;
 
-chrono::high_resolution_clock::time_point start, finish;
+chrono::high_resolution_clock::time_point start, finish, ti1, ti2;
 
 //funzione calcolata dagli stati intermedi della pipeline
 int compute(TaskType type, int val) {
@@ -53,9 +53,11 @@ void body(TaskType type, int n) {
       start = chrono::high_resolution_clock::now();
       for (int i=0; i<n+1; i++) {
         cout << "Thread #" << type << " on CPU n." << sched_getcpu() << "\n";
-        if (i==n)
+        if (i==n) {
           //inserisco 0 per terminare i thread
           queues[0].push(0);
+          ti2 = chrono::high_resolution_clock::now();
+        }
         else
           queues[0].push(rand()%10+1);
       }
@@ -63,6 +65,9 @@ void body(TaskType type, int n) {
     //ultimo stadio: prende i numeri dall'ultima coda e li stampa
     case print:
       while(1) {
+        if (isf) {
+          isf = 0;
+        }
         cout << "Thread #" << type << " on CPU n." << sched_getcpu() << "\n";
         data = queues[type-1].pop();
         if (data != 0) {
@@ -105,13 +110,12 @@ int main(int argc, char const *argv[]) {
 
   vector<thread*> threads;
 
-  chrono::high_resolution_clock::time_point tstart = chrono::high_resolution_clock::now();
+  ti1 = chrono::high_resolution_clock::now();
   threads.push_back(new thread(body, produce, n));
   threads.push_back(new thread(body, add, n));
   threads.push_back(new thread(body, square, n));
   threads.push_back(new thread(body, sub, n));
   threads.push_back(new thread(body, print, n));
-  chrono::high_resolution_clock::time_point tend = chrono::high_resolution_clock::now();
 
   cpu_set_t cpuset;
   if (mode == 1) {
@@ -129,9 +133,8 @@ int main(int argc, char const *argv[]) {
 
   //tempo di completamento da quando viene inserito il primo numero a quando viene prodotto l'ultimo risultato
   chrono::duration<double> elapsed = chrono::duration_cast<chrono::duration<double>>(finish - start);
-  //tempo speso per la creazione dei thread
-  chrono::duration<double> telapsed = chrono::duration_cast<chrono::duration<double>>(tend - tstart);
-
-  cout << "ELapsed time: " << elapsed.count() << "\n";
-  cout << "Thread creation time: " << telapsed.count() << "\n";
+  //tempo speso per inserire gli input
+  chrono::duration<double> tsetup = chrono::duration_cast<chrono::duration<double>>(ti2 - ti1);
+  cout << "Computing time: " << elapsed.count() << "\n";
+  cout << "Setup time: " << tsetup.count() << "\n";
 }
