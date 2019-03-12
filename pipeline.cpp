@@ -26,7 +26,7 @@ g_queue<int> queues [4];
 //0: auto scheduling, 1: stick threads to cores
 int mode = 0, isf = 1;
 
-chrono::high_resolution_clock::time_point start, finish, ti1, ti2;
+chrono::high_resolution_clock::time_point finish, ti1, ti2;
 
 //funzione calcolata dagli stati intermedi della pipeline
 int compute(TaskType type, int val) {
@@ -50,12 +50,12 @@ void body(TaskType type, int n) {
   switch(type) {
     //primo stadio: genera un numero tra 1 e 10 e lo inserisce nella prima coda
     case produce:
-      start = chrono::high_resolution_clock::now();
       for (int i=0; i<n+1; i++) {
         cout << "Thread #" << type << " on CPU n." << sched_getcpu() << "\n";
         if (i==n) {
           //inserisco 0 per terminare i thread
           queues[0].push(0);
+          //momento in cui si conclude il setup
           ti2 = chrono::high_resolution_clock::now();
         }
         else
@@ -65,18 +65,16 @@ void body(TaskType type, int n) {
     //ultimo stadio: prende i numeri dall'ultima coda e li stampa
     case print:
       while(1) {
-        if (isf) {
-          isf = 0;
-        }
+        if (isf)
+          //momento in cui si conclude la computazione
+          finish = chrono::high_resolution_clock::now();
         cout << "Thread #" << type << " on CPU n." << sched_getcpu() << "\n";
         data = queues[type-1].pop();
         if (data != 0) {
           cout << data << "\n";
         }
-        else {
-          finish = chrono::high_resolution_clock::now();
+        else
           break;
-        }
       }
       break;
     //stadio intermedio: prende i numeri dalla coda precedente applica la funzione e li inserisce nella coda successiva
@@ -132,7 +130,7 @@ int main(int argc, char const *argv[]) {
   }
 
   //tempo di completamento da quando viene inserito il primo numero a quando viene prodotto l'ultimo risultato
-  chrono::duration<double> elapsed = chrono::duration_cast<chrono::duration<double>>(finish - start);
+  chrono::duration<double> elapsed = chrono::duration_cast<chrono::duration<double>>(finish - ti2);
   //tempo speso per inserire gli input
   chrono::duration<double> tsetup = chrono::duration_cast<chrono::duration<double>>(ti2 - ti1);
   cout << "Computing time: " << elapsed.count() << "\n";
