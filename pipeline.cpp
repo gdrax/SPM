@@ -47,7 +47,6 @@ int compute(TaskType type, int val) {
 //codice eseguito dai thread
 void body(TaskType type, int n) {
   int data;
-  this_thread::sleep_for(20ms);
   switch(type) {
     //primo stadio: genera un numero tra 1 e 10 e lo inserisce nella prima coda
     case produce:
@@ -59,7 +58,6 @@ void body(TaskType type, int n) {
           queues[0].push(0);
         else
           queues[0].push(rand()%10+1);
-        this_thread::sleep_for(100ms);
       }
       break;
     //ultimo stadio: prende i numeri dall'ultima coda e li stampa
@@ -68,7 +66,6 @@ void body(TaskType type, int n) {
         cout << "Thread #" << type << " on CPU n." << sched_getcpu() << "\n";
         data = queues[type-1].pop();
         if (data != 0) {
-          this_thread::sleep_for(100ms);
           cout << data << "\n";
         }
         else {
@@ -83,7 +80,7 @@ void body(TaskType type, int n) {
         cout << "Thread #" << type << " on CPU n." << sched_getcpu() << "\n";
         data = queues[type-1].pop();
         if (data != 0) {
-          this_thread::sleep_for(100ms);
+          this_thread::sleep_for(10ms);
           queues[type].push(compute(type, data));
         }
         else {
@@ -118,8 +115,9 @@ int main(int argc, char const *argv[]) {
 
   cpu_set_t cpuset;
   if (mode == 1) {
-    CPU_ZERO(&cpuset);
+    //il 5o thread non è attaccato a nessuna CPU
     for (int i=0; i<4; i++) {
+      CPU_ZERO(&cpuset);
       CPU_SET(i, &cpuset);
       pthread_setaffinity_np(threads[i]->native_handle(), sizeof(cpu_set_t), &cpuset);
     }
