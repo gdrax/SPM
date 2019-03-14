@@ -24,9 +24,7 @@ typedef enum {
 g_queue<int> queues [4];
 
 //0: auto scheduling, 1: stick threads to cores
-int mode = 0, isf = 1;
-
-chrono::high_resolution_clock::time_point finish, ti1, ti2;
+int mode = 0;
 
 //funzione calcolata dagli stati intermedi della pipeline
 int compute(TaskType type, int val) {
@@ -55,8 +53,6 @@ void body(TaskType type, int n) {
         if (i==n) {
           //inserisco 0 per terminare i thread
           queues[0].push(0);
-          //momento in cui si conclude il setup
-          ti2 = chrono::high_resolution_clock::now();
         }
         else
           queues[0].push(rand()%10+1);
@@ -65,9 +61,6 @@ void body(TaskType type, int n) {
     //ultimo stadio: prende i numeri dall'ultima coda e li stampa
     case print:
       while(1) {
-        if (isf)
-          //momento in cui si conclude la computazione
-          finish = chrono::high_resolution_clock::now();
         cout << "Thread #" << type << " on CPU n." << sched_getcpu() << "\n";
         data = queues[type-1].pop();
         if (data != 0) {
@@ -83,7 +76,7 @@ void body(TaskType type, int n) {
         cout << "Thread #" << type << " on CPU n." << sched_getcpu() << "\n";
         data = queues[type-1].pop();
         if (data != 0) {
-          this_thread::sleep_for(10ms);
+          this_thread::sleep_for(1ms);
           queues[type].push(compute(type, data));
         }
         else {
@@ -108,7 +101,7 @@ int main(int argc, char const *argv[]) {
 
   vector<thread*> threads;
 
-  ti1 = chrono::high_resolution_clock::now();
+  chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
   threads.push_back(new thread(body, produce, n));
   threads.push_back(new thread(body, add, n));
   threads.push_back(new thread(body, square, n));
@@ -129,10 +122,13 @@ int main(int argc, char const *argv[]) {
     t->join();
   }
 
+  chrono::high_resolution_clock::time_point end = chrono::high_resolution_clock::now();
+
   //tempo di completamento da quando viene inserito il primo numero a quando viene prodotto l'ultimo risultato
-  chrono::duration<double> elapsed = chrono::duration_cast<chrono::duration<double>>(finish - ti2);
-  //tempo speso per inserire gli input
-  chrono::duration<double> tsetup = chrono::duration_cast<chrono::duration<double>>(ti2 - ti1);
+  chrono::duration<double> elapsed = chrono::duration_cast<chrono::duration<double>>(end - start);
+
   cout << "Computing time: " << elapsed.count() << "\n";
-  cout << "Setup time: " << tsetup.count() << "\n";
+  cout << "Ideal time: " << n << "ms\n";
 }
+
+//la computazione della pipeline dovrebbe essere più veloce nel caso in cui attacco ogni thread ad una CPU perché nel caso di un cambio di core viene generato almeno un fault di cache
