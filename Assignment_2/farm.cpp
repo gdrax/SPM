@@ -2,6 +2,7 @@
 #include <thread>
 #include <mutex>
 #include <string>
+#include <vector>
 #include <functional>
 
 #include "queue.hpp"
@@ -25,27 +26,27 @@ Structure of a worker thread
 template<typename input, typename output> class Worker {
 private:
   function<output(input)> work;
-  g_queue<input> inQ;
-  g_queue<output> outQ;
+  g_queue<input>& inQ;
+  g_queue<output>& outQ;
   string name;
 
 public:
-  Worker(string name, function<output(input)> f, g_queue<input> &inQ, g_queue<output> &outQ):
+  Worker(string name, function<output(input)> f, g_queue<input>& inQ, g_queue<output>& outQ):
     name(name), work(f), inQ(inQ), outQ(outQ) {}
 
   thread *run() {
     auto body = [&] () {
 
-      auto item = inQ.pop();
+      auto item = inQ->pop();
 
       while(item > 0) {
         auto result = work(item);
 
-        outQ.push(result);
+        outQ->push(result);
 
         //this_thread::sleep_for(100ms);
 
-        item = inQ.pop();
+        item = inQ->pop();
       }
       return;
     };
@@ -77,13 +78,14 @@ int main(int argc, char const *argv[]) {
       if (is_prime(i))
         count++;
     }
+    return count;
   };
 
   for (int i=0; i<n; i++) {
     inputQ.push(50);
   }
 
-  vector<Worker<int, int>> workers;
+  vector<Worker<int, int>*> workers;
   vector<thread*> threads;
 
   for (int i=0; i<nw; i++) {
