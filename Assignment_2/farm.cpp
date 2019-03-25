@@ -53,20 +53,20 @@ public:
       return;
     };
 
-    auto tid = new thread(body);
-    return tid;
+    return new thread(body);
   }
 };
 
 int main(int argc, char const *argv[]) {
 
-  if (argc != 3) {
+  if (argc != 4) {
     cout << "farm [N. WORKERS] [N. ITEM TO COMPUTE] [NUMBER TO COMPUTE]\n";
     return -1;
   }
 
   int nw = atoi(argv[1]);
   int n = atoi(argv[2]);
+  int target = atoi(argv[3]);
 
   g_queue<int> inputQ;
   g_queue<int> outputQ;
@@ -80,14 +80,15 @@ int main(int argc, char const *argv[]) {
       if (is_prime(i))
         count++;
     }
-    cout << "result = " << count << endl;
     return count;
   };
 
   for (int i=0; i<n; i++) {
-    inputQ.push(100);
+    inputQ.push(target);
   }
-  inputQ.push(0);
+  for (int i=0; i<nw; i++) {
+    inputQ.push(0);
+  }
 
   vector<Worker<int, int>*> workers;
   vector<thread*> threads;
