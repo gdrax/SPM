@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "queue.hpp"
+#include "utimer.cpp"
 
 using namespace std;
 
@@ -28,25 +29,26 @@ private:
   function<output(input)> work;
   g_queue<input>& inQ;
   g_queue<output>& outQ;
-  string name;
+  int name;
 
 public:
-  Worker(string name, function<output(input)> f, g_queue<input>& inQ, g_queue<output>& outQ):
+  Worker(int name, function<output(input)> f, g_queue<input>& inQ, g_queue<output>& outQ):
     name(name), work(f), inQ(inQ), outQ(outQ) {}
 
   thread *run() {
     auto body = [&] () {
 
-      auto item = inQ->pop();
+      auto item = inQ.pop();
 
       while(item > 0) {
         auto result = work(item);
 
-        outQ->push(result);
+        outQ.push(result);
 
         //this_thread::sleep_for(100ms);
+        cout << item << " computed by worker " << name << endl;
 
-        item = inQ->pop();
+        item = inQ.pop();
       }
       return;
     };
@@ -59,7 +61,7 @@ public:
 int main(int argc, char const *argv[]) {
 
   if (argc != 3) {
-    cout << "farm [N_WORKERS] [N_INPUTS]\n";
+    cout << "farm [N. WORKERS] [N. ITEM TO COMPUTE] [NUMBER TO COMPUTE]\n";
     return -1;
   }
 
@@ -72,32 +74,38 @@ int main(int argc, char const *argv[]) {
   /*
   Counts number of prime numbers in range [2, n]
   */
-  auto count_primes = [] (int n) {
+  auto count_primes = [] (int num) {
     int count = 0;
-    for (int i=n; i>1; i--) {
+    for (int i=num; i>1; i--) {
       if (is_prime(i))
         count++;
     }
+    cout << "result = " << count << endl;
     return count;
   };
 
   for (int i=0; i<n; i++) {
-    inputQ.push(50);
+    inputQ.push(100);
   }
+  inputQ.push(0);
 
   vector<Worker<int, int>*> workers;
   vector<thread*> threads;
 
   for (int i=0; i<nw; i++) {
-    workers.push_back(new Worker<int, int>("worker_"+i, count_primes, inputQ, outputQ));
+    workers.push_back(new Worker<int, int>(i, count_primes, inputQ, outputQ));
   }
 
-  for (int i=0; i<nw; i++) {
-    inputQ.push(0);
-  }
+  {
+    utimer u("total");
 
-  for (auto &t: threads) {
-    t->join();
+    for (auto w: workers) {
+      threads.push_back(w->run());
+    }
+
+    for (auto t: threads) {
+      t->join();
+    }
   }
 
   return 0;
