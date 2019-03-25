@@ -46,7 +46,7 @@ public:
         outQ.push(result);
 
         //this_thread::sleep_for(100ms);
-        cout << item << " computed by worker " << name << endl;
+        //cout << item << " computed by worker " << name << endl;
 
         item = inQ.pop();
       }
