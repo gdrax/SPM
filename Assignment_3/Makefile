@@ -1,3 +1,3 @@
 CXX	= g++
-CXXFLAGS = -std=c++17 -Dcimg_display=0
+CXXFLAGS = -std=c++17 -lX11
 LDFLAGS = -pthread
