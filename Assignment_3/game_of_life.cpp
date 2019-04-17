@@ -12,19 +12,16 @@ using namespace std;
 int n = 0;
 int stop = 0;
 
-bool swap(bool *completed, int nw) {
+bool isCompleted(bool *completed, int nw) {
   int count = 0;
   for (int i=0; i<nw; i++) {
     if (completed[i])
       count++;
   }
-  if (count == nw) {
-    completed = new bool [nw] ();
+  if (count == nw)
     return true;
-  }
-  else {
+  else
     return false;
-  }
 }
 
 /*
@@ -42,7 +39,7 @@ Calcola lo stato delle celle alla prossima iterazione
 void compute_life(bool **source_mat, bool **dest_mat, int index) {
   int row = (int)index / n;
   int col = index % n;
-  int life = source_mat[row][col];
+  bool life = source_mat[row][col];
   int neighbours_alive = 0;
   for (int i=-1; i<2; i++) {
     for (int j=-1; j<2; j++) {
@@ -50,10 +47,16 @@ void compute_life(bool **source_mat, bool **dest_mat, int index) {
         neighbours_alive++;
     }
   }
-  if (life && (neighbours_alive > 4 || neighbours_alive < 3))
+  if (life && (neighbours_alive > 4 || neighbours_alive < 3)) {
     dest_mat[row][col] = false;
-  else if (!life && neighbours_alive == 3)
+    //cout << "dead\n";
+  }
+  else if (!life && neighbours_alive == 3) {
     dest_mat[row][col] = true;
+    //cout << "born\n";
+  }
+  else
+    dest_mat[row][col] = source_mat[row][col];
 }
 
 /*
@@ -67,19 +70,21 @@ private:
   int name;
   bool *completed;
   int nw;
-  int witch_mat = 0;
+  bool *which_mat;
 
 public:
-  Worker(int name, bool ***matrices, int start, int end, bool *completed, int nw):
-    name(name), matrices(matrices), start(start), end(end), completed(completed), nw(nw) {}
+  Worker(int name, bool ***matrices, int start, int end, bool *completed, int nw, bool *which_mat):
+    name(name), matrices(matrices), start(start), end(end), completed(completed), nw(nw), which_mat(which_mat) {}
 
   thread *run() {
     auto body = [&] () {
-      while (!stop && swap(completed, nw)) {
-        for (int i=start; i<end+1; i++) {
-          compute_life(matrices[witch_mat], matrices[!witch_mat], i);
+      while (!stop) {
+        if (!completed[name]) {
+          for (int i=start; i<end+1; i++) {
+            compute_life(matrices[*which_mat], matrices[!(*which_mat)], i);
+          }
+          completed[name] = 1;
         }
-        completed[name] = 1;
       }
       return;
       };
@@ -96,26 +101,30 @@ private:
   bool ***matrices;
   bool *completed;
   int nw;
-  int witch_mat = 0;
+  bool *which_mat;
 
 public:
-  Drawer(bool ***matrices, bool *completed, int nw):
-    matrices(matrices), completed(completed), nw(nw) {}
+  Drawer(bool ***matrices, bool *completed, int nw, bool *which_mat):
+    matrices(matrices), completed(completed), nw(nw), which_mat(which_mat) {}
 
   thread *run() {
     auto body = [&] () {
       CImg<unsigned char> board(n,n,1,3,0);
       CImgDisplay draw_disp(board,"Click a point");
       while(!draw_disp.is_closed()) {
-        if (swap(completed, nw)) {
-          witch_mat = !witch_mat;
-        }
         for (int i=0; i<n; i++) {
           for (int j=0; j<n; j++) {
-            if (matrices[witch_mat][i][j] == true) {
+            if (matrices[*which_mat][i][j] == 1)
               board(i, j, 1) = 255;
-              board.display(draw_disp);
-            }
+            else
+              board(i, j, 1) = 0;
+            board.display(draw_disp);
+          }
+        }
+        if (isCompleted(completed, nw)) {
+          *which_mat = !(*which_mat);
+          for (int i=0; i<nw; i++) {
+            completed[nw] = false;
           }
         }
       }
@@ -152,17 +161,35 @@ int main(int argc, char const *argv[]) {
   //creo i thread
   vector<thread *> threads;
   vector<Worker *> workers;
-  Drawer *drawer = new Drawer(matrices, completed, nw);
+  bool which_mat = 0;
+  Drawer *drawer = new Drawer(matrices, completed, nw, &which_mat);
   for (int i=0; i<nw; i++) {
-    workers.push_back(new Worker(i, matrices, 0+n/nw*i, (n/nw-1)+n/nw*i, completed, nw));
+    workers.push_back(new Worker(i, matrices, 0+n/nw*i, (n/nw-1)+n/nw*i, completed, nw, &which_mat));
   }
 
   //avvio i thread
   threads.push_back(drawer->run());
   for (auto w: workers) {
-    //threads.push_back(w->run());
+    threads.push_back(w->run());
   }
 
+/*
+  int which = 0;
+  while(!stop) {
+    if (!isCompleted(completed, nw)) {
+      for (int i=0; i<n; i++) {
+        for (int j=0; j<n; j++) {
+          matrices[which][i][j] = rand() % 2;
+        }
+      }
+      for (int i=0; i<n*n; i++) {
+        compute_life(matrices[which], matrices[!which], i);
+      }
+      completed[0] = 1;
+    }
+    which = !which;
+  }
+*/
   //join
   for (auto t: threads) {
     t->join();
