@@ -122,10 +122,9 @@ public:
           }
         }
         if (isCompleted(completed, nw)) {
-          cout << "hipwebfpewibfpweifbwpebfwfbw\n";
           *which_mat = !(*which_mat);
           for (int i=0; i<nw; i++) {
-            completed[nw] = false;
+            completed[i] = false;
           }
         }
       }
