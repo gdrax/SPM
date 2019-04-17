@@ -49,14 +49,13 @@ void compute_life(bool **source_mat, bool **dest_mat, int index) {
   }
   if (life && (neighbours_alive > 4 || neighbours_alive < 3)) {
     dest_mat[row][col] = false;
-    //cout << "dead\n";
   }
   else if (!life && neighbours_alive == 3) {
     dest_mat[row][col] = true;
-    //cout << "born\n";
   }
-  else
+  else {
     dest_mat[row][col] = source_mat[row][col];
+  }
 }
 
 /*
@@ -81,7 +80,7 @@ public:
       while (!stop) {
         if (!completed[name]) {
           for (int i=start; i<end+1; i++) {
-            compute_life(matrices[*which_mat], matrices[!(*which_mat)], i);
+            compute_life(matrices[!(*which_mat)], matrices[*which_mat], i);
           }
           completed[name] = true;
         }
@@ -112,6 +111,7 @@ public:
       CImg<unsigned char> board(n,n,1,3,0);
       CImgDisplay draw_disp(board,"Click a point");
       while(!draw_disp.is_closed()) {
+        cout << *which_mat << endl;
         for (int i=0; i<n; i++) {
           for (int j=0; j<n; j++) {
             if (matrices[*which_mat][i][j] == 1)
@@ -144,6 +144,7 @@ int main(int argc, char const *argv[]) {
 
   int nw = atoi(argv[1]);
   n = atoi(argv[2]);
+  int n_cells = n*n;
   int init = atoi(argv[3]);
 
   bool *completed = new bool [nw];
@@ -168,7 +169,7 @@ int main(int argc, char const *argv[]) {
   bool which_mat = 0;
   Drawer *drawer = new Drawer(matrices, completed, nw, &which_mat);
   for (int i=0; i<nw; i++) {
-    workers.push_back(new Worker(i, matrices, 0+n/nw*i, (n/nw-1)+n/nw*i, completed, nw, &which_mat));
+    workers.push_back(new Worker(i, matrices, 0+n_cells/nw*i, (n_cells/nw-1)+n_cells/nw*i, completed, nw, &which_mat));
   }
 
   for (int i=0; i<n; i++) {
