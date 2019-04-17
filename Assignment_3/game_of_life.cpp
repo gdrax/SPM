@@ -74,7 +74,7 @@ private:
 
 public:
   Worker(int name, bool ***matrices, int start, int end, bool *completed, int nw, bool *which_mat):
-    name(name), matrices(matrices), start(start), end(end), completed(completed), nw(nw), which_mat(which_mat) {}
+    name(name), matrices(matrices), start(start), end(end), completed(completed), nw(nw), which_mat(which_mat) {cout << start << "  " << end << endl;}
 
   thread *run() {
     auto body = [&] () {
@@ -83,7 +83,7 @@ public:
           for (int i=start; i<end+1; i++) {
             compute_life(matrices[*which_mat], matrices[!(*which_mat)], i);
           }
-          completed[name] = 1;
+          completed[name] = true;
         }
       }
       return;
@@ -122,6 +122,7 @@ public:
           }
         }
         if (isCompleted(completed, nw)) {
+          cout << "hipwebfpewibfpweifbwpebfwfbw\n";
           *which_mat = !(*which_mat);
           for (int i=0; i<nw; i++) {
             completed[nw] = false;
@@ -146,7 +147,11 @@ int main(int argc, char const *argv[]) {
   n = atoi(argv[2]);
   int init = atoi(argv[3]);
 
-  bool *completed = new bool [nw] ();
+  bool *completed = new bool [nw];
+
+  for (int i=0; i<nw; i++) {
+    completed[i] = true;
+  }
 
 
   //creo due matrici di bool e le inizializzo con 0
@@ -167,11 +172,17 @@ int main(int argc, char const *argv[]) {
     workers.push_back(new Worker(i, matrices, 0+n/nw*i, (n/nw-1)+n/nw*i, completed, nw, &which_mat));
   }
 
+  for (int i=0; i<n; i++) {
+    for (int j=0; j<n; j++) {
+      matrices[0][i][j] = rand() % 2;
+    }
+  }
+
   //avvio i thread
-  threads.push_back(drawer->run());
   for (auto w: workers) {
     threads.push_back(w->run());
   }
+  threads.push_back(drawer->run());
 
 /*
   int which = 0;
