@@ -11,6 +11,7 @@ using namespace std;
 
 int n = 0;
 int stop = 0;
+CImg<unsigned char> board;
 
 bool isCompleted(bool *completed, int nw) {
   int count = 0;
@@ -92,50 +93,6 @@ public:
   }
 };
 
-/*
-Struttura del thread che disegna la matrices
-*/
-class Drawer {
-private:
-  bool ***matrices;
-  bool *completed;
-  int nw;
-  bool *which_mat;
-
-public:
-  Drawer(bool ***matrices, bool *completed, int nw, bool *which_mat):
-    matrices(matrices), completed(completed), nw(nw), which_mat(which_mat) {}
-
-  thread *run() {
-    auto body = [&] () {
-      CImg<unsigned char> board(n,n,1,3,0);
-      CImgDisplay draw_disp(board,"Game of life");
-      while(!draw_disp.is_closed()) {
-        cout << *which_mat << endl;
-        for (int i=0; i<n; i++) {
-          for (int j=0; j<n; j++) {
-            if (matrices[*which_mat][i][j] == 1)
-              board(i, j, 1) = 255;
-            else
-              board(i, j, 1) = 0;
-            board.display(draw_disp);
-          }
-        }
-        if (isCompleted(completed, nw)) {
-          *which_mat = !(*which_mat);
-          for (int i=0; i<nw; i++) {
-            completed[i] = false;
-          }
-        }
-      }
-      stop = 1;
-      return;
-    };
-    return new thread(body);
-  }
-};
-
-
 int main(int argc, char const *argv[]) {
   if (argc != 4) {
     cout << argv[0] << " [N. WORKERS] [SIZE OF MATRICES] [INITIALIZATION]\n[INITIALIZATION] --> 0 : random, 1 : arrows\n";
@@ -182,7 +139,28 @@ int main(int argc, char const *argv[]) {
   for (auto w: workers) {
     threads.push_back(w->run());
   }
-  threads.push_back(drawer->run());
+
+  board(n,n,1,3,0);
+  CImgDisplay draw_disp(board,"Game of life");
+  while(!draw_disp.is_closed()) {
+    cout << *which_mat << endl;
+    for (int i=0; i<n; i++) {
+      for (int j=0; j<n; j++) {
+        if (matrices[*which_mat][i][j] == 1)
+          board(i, j, 1) = 255;
+        else
+          board(i, j, 1) = 0;
+        board.display(draw_disp);
+      }
+    }
+    if (isCompleted(completed, nw)) {
+      *which_mat = !(*which_mat);
+      for (int i=0; i<nw; i++) {
+        completed[i] = false;
+      }
+    }
+  }
+  stop = 1;
 
   //join
   for (auto t: threads) {
