@@ -5,6 +5,7 @@
 #include<thread>
 
 #include "CImg.h"
+#include "utimer.cpp"
 
 using namespace cimg_library;
 using namespace std;
@@ -79,10 +80,13 @@ public:
     auto body = [&] () {
       while (!stop) {
         if (!completed[name]) {
-          for (int i=start; i<end+1; i++) {
-            compute_life(matrices[!(*which_mat)], matrices[*which_mat], i);
+          {
+            utimer u("Worker "+name);
+            for (int i=start; i<end+1; i++) {
+              compute_life(matrices[!(*which_mat)], matrices[*which_mat], i);
+            }
+            completed[name] = true;
           }
-          completed[name] = true;
         }
       }
       return;
@@ -111,7 +115,6 @@ public:
       CImg<unsigned char> board(n,n,1,3,0);
       CImgDisplay draw_disp(board,"Game of life");
       while(!draw_disp.is_closed()) {
-        cout << *which_mat << endl;
         for (int i=0; i<n; i++) {
           for (int j=0; j<n; j++) {
             if (matrices[*which_mat][i][j] == 1)
