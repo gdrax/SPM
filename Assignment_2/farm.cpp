@@ -86,6 +86,7 @@ int main(int argc, char const *argv[]) {
   for (int i=0; i<n; i++) {
     inputQ.push(target);
   }
+
   for (int i=0; i<nw; i++) {
     inputQ.push(0);
   }
