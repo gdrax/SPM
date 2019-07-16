@@ -3,8 +3,7 @@
 
 using namespace std;
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
     if (argc < 4) {
         cout << "USAGE: " << argv[0] << " [function_name] [n. of particles] [n. iterations]\n";
         return -1;
@@ -28,20 +27,21 @@ int main(int argc, char const *argv[])
         cout << "ERROR: n. of iterations must be positive\n";
     }
 
-    swarm_t swarm = initialize_swarm(n_particles, target_func);
+    swarm_t *swarm = initialize_swarm(n_particles, target_func);
 
     print_swarm(swarm, target_func);
 
     for (int i=0; i<n_iterations; i++) {
-        cout << "Iteration" << i << ": global_min = " << compute_bench_fun(swarm.global_min, target_func) << "\n";
-        for (int j=0; j<swarm.n_particles; j++) {
-            update_velocity(swarm.particles[j], swarm.global_min);
-            update_local(swarm.particles[j], target_func);
+        cout << "Iteration" << i << ": global_min = " << compute_bench_fun(swarm->global_min, target_func) << "\n";
+        for (int j=0; j<swarm->n_particles; j++) {
+            update_velocity(&(swarm->particles[j]), swarm->global_min);
+            cout << (swarm->particles[j].position.x) << endl;
+            update_local(&(swarm->particles[j]), target_func);
+            cout << (swarm->particles[j].position.x) << "sargio\n";
         }
         update_global(swarm, target_func);
     }
 
     print_swarm(swarm, target_func);
-
     return 0;
 }

@@ -87,9 +87,6 @@ float bench_fun_bound(string func) {
 void compute_velocity_X(particle_t *particle, position_t global_min) {
     float local_diff = particle->position.x - particle->local_min.x;
     float global_diff = particle->position.x - global_min.x;
-    //cout << inertia_weight*particle.vx << endl;
-    //cout << cognitive_parameter*random01()*local_diff << endl;
-    //cout << social_parameter*random01()*global_diff << endl;
     particle->vx = inertia_weight*particle->vx + cognitive_parameter*random01()*local_diff + social_parameter*random01()*global_diff;
 }
 
@@ -105,40 +102,40 @@ void compute_velocity_Y(particle_t *particle, position_t global_min) {
 /**
  * Update the velocity of a particle
  */
-void update_velocity(particle_t particle, position_t global_min) {
-    cout << particle.vx << endl;
-    compute_velocity_X(&particle, global_min);
-    cout << particle.vx << endl;
-    compute_velocity_Y(&particle, global_min);
+void update_velocity(particle_t *particle, position_t global_min) {
+    // cout << particle->vx << endl;
+    compute_velocity_X(particle, global_min);
+    // cout << particle->vx << endl;
+    compute_velocity_Y(particle, global_min);
 }
 
 /**
  * Update the position of a particle
  */
-void update_position(particle_t particle) {
-    particle.position.x += particle.vx;
-    particle.position.y += particle.vy;
+void update_position(particle_t *particle) {
+    particle->position.x += particle->vx;
+    particle->position.y += particle->vy;
 }
 
 /**
  * Update the position of the local minimun of a particle
  */
-void update_local(particle_t particle, string func) {
+void update_local(particle_t *particle, string func) {
     update_position(particle);
-    if (compute_bench_fun(particle.position, func) <  compute_bench_fun(particle.local_min, func)) {
-        particle.local_min.x = particle.position.x;
-        particle.local_min.y = particle.position.y;
+    if (compute_bench_fun(particle->position, func) <  compute_bench_fun(particle->local_min, func)) {
+        particle->local_min.x = particle->position.x;
+        particle->local_min.y = particle->position.y;
     }
 }
 
 /**
  * Update the position of the global minimum
  */
-void update_global(swarm_t swarm, string func) {
-    for (int i=0; i<swarm.n_particles; i++) {
-        if (compute_bench_fun(swarm.particles[i].position, func) < compute_bench_fun(swarm.global_min, func)) {
-            swarm.global_min.x = swarm.particles[i].position.x;
-            swarm.global_min.y = swarm.particles[i].position.y;
+void update_global(swarm_t *swarm, string func) {
+    for (int i=0; i<swarm->n_particles; i++) {
+        if (compute_bench_fun(swarm->particles[i].position, func) < compute_bench_fun(swarm->global_min, func)) {
+            swarm->global_min.x = swarm->particles[i].position.x;
+            swarm->global_min.y = swarm->particles[i].position.y;
         }
     }
 }
@@ -146,26 +143,26 @@ void update_global(swarm_t swarm, string func) {
 /**
  * Computes the initial position of the particles in the search space
  */
-swarm_t initialize_swarm(int n_particles, string func) {
-    swarm_t swarm;
+swarm_t *initialize_swarm(int n_particles, string func) {
+    swarm_t *swarm = new swarm_t;
     float domain_max = bench_fun_bound(func);
     float domain_min = -domain_max;
-    swarm.particles = new particle_t[n_particles];
+    swarm->particles = new particle_t[n_particles];
 
     for (int i=0; i<(int)sqrt(n_particles); i++) {
         for (int j=0; j<(int)sqrt(n_particles); j++) {
             int index = i*(int)sqrt(n_particles)+j;
-            swarm.particles[index].position.x = domain_min + i*2*domain_max/(float)sqrt(n_particles);
-            swarm.particles[index].position.y = domain_min + j*2*domain_max/(float)sqrt(n_particles);
-            swarm.particles[index].vx = 0;
-            swarm.particles[index].vy = 0;
-            swarm.particles[index].local_min = swarm.particles[index].position;
+            swarm->particles[index].position.x = domain_min + i*2*domain_max/(float)sqrt(n_particles);
+            swarm->particles[index].position.y = domain_min + j*2*domain_max/(float)sqrt(n_particles);
+            swarm->particles[index].vx = 0;
+            swarm->particles[index].vy = 0;
+            swarm->particles[index].local_min = swarm->particles[index].position;
             if (i==0 && j==0)
-                swarm.global_min = swarm.particles[index].position;
+                swarm->global_min = swarm->particles[index].position;
             else
-                if (compute_bench_fun(swarm.particles[index].local_min, func) < compute_bench_fun(swarm.global_min, func))
-                    swarm.global_min = swarm.particles[index].position;
-            swarm.n_particles = n_particles;
+                if (compute_bench_fun(swarm->particles[index].local_min, func) < compute_bench_fun(swarm->global_min, func))
+                    swarm->global_min = swarm->particles[index].position;
+            swarm->n_particles = n_particles;
         }
     }
     return swarm;
@@ -174,12 +171,12 @@ swarm_t initialize_swarm(int n_particles, string func) {
 /**
  * Print the information of the swarm   
  */
-void print_swarm(swarm_t swarm, string func) {
-    for (int i=0; i<swarm.n_particles; i++) {
+void print_swarm(swarm_t *swarm, string func) {
+    for (int i=0; i<swarm->n_particles; i++) {
         cout << "Particle n." << i << ": ";
-        cout << "x=" << swarm.particles[i].position.x;
-        cout << " y=" << swarm.particles[i].position.y;
-        cout << " local_min=" << compute_bench_fun(swarm.particles[i].local_min, func) << "\n";
+        cout << "x=" << swarm->particles[i].position.x;
+        cout << " y=" << swarm->particles[i].position.y;
+        cout << " local_min=" << compute_bench_fun(swarm->particles[i].local_min, func) << "\n";
     }
-    cout << "global_min=" << compute_bench_fun(swarm.global_min, func) << "\n";
+    cout << "global_min=" << compute_bench_fun(swarm->global_min, func) << "\n";
 }
