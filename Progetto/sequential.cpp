@@ -5,8 +5,8 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {
-    if (argc < 3) {
-        cout << "USAGE: " << argv[0] << " [function_name] [n. of particles]\n";
+    if (argc < 4) {
+        cout << "USAGE: " << argv[0] << " [function_name] [n. of particles] [n. iterations]\n";
         return -1;
     }
 
@@ -22,10 +22,26 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
-    float domain_max = bench_fun_bound(target_func);
-    float domain_min = -domain_max;
+    //in realtà must be quadrato perfetto
+    int n_iterations = atoi(argv[3]);
+    if (n_iterations <= 0) {
+        cout << "ERROR: n. of iterations must be positive\n";
+    }
 
-    
+    swarm_t swarm = initialize_swarm(n_particles, target_func);
+
+    print_swarm(swarm, target_func);
+
+    for (int i=0; i<n_iterations; i++) {
+        cout << "Iteration" << i << ": global_min = " << compute_bench_fun(swarm.global_min, target_func) << "\n";
+        for (int j=0; j<swarm.n_particles; j++) {
+            update_velocity(swarm.particles[j], swarm.global_min);
+            update_local(swarm.particles[j], target_func);
+        }
+        update_global(swarm, target_func);
+    }
+
+    print_swarm(swarm, target_func);
 
     return 0;
 }
