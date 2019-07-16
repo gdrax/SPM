@@ -44,7 +44,7 @@ float const inertia_weight = 0.9;
  * Generates a random number in [0, 1]
 **/
 float random01() {
-    return float(((double) rand() / (RAND_MAX)) + 1);
+    return (float)(rand()+1) / ((float)(RAND_MAX) + 1);
 }
 
 /**
@@ -85,8 +85,8 @@ float bench_fun_bound(string func) {
  * Compute the new X component of the velocity of a particle
 **/
 void compute_velocity_X(particle_t *particle, position_t global_min) {
-    float local_diff = particle->position.x - particle->local_min.x;
-    float global_diff = particle->position.x - global_min.x;
+    float local_diff = particle->local_min.x - particle->position.x;
+    float global_diff = global_min.x - particle->position.x;
     particle->vx = inertia_weight*particle->vx + cognitive_parameter*random01()*local_diff + social_parameter*random01()*global_diff;
 }
 
@@ -94,8 +94,10 @@ void compute_velocity_X(particle_t *particle, position_t global_min) {
  * Compute the new Y component of the velocity of a particle
 **/
 void compute_velocity_Y(particle_t *particle, position_t global_min) {
-    float local_diff = particle->position.y - particle->local_min.y;
-    float global_diff = particle->position.y - global_min.y;
+    float local_diff = particle->local_min.y - particle->position.y;
+    cout << "local diff: " << local_diff << endl;
+    float global_diff = global_min.y - particle->position.y;
+    cout << "global diff: " << global_diff << endl;
     particle->vy =  inertia_weight*particle->vy + cognitive_parameter*random01()*local_diff + social_parameter*random01()*global_diff;
 }
 
@@ -158,10 +160,12 @@ swarm_t *initialize_swarm(int n_particles, string func) {
             swarm->particles[index].vy = 0;
             swarm->particles[index].local_min = swarm->particles[index].position;
             if (i==0 && j==0)
-                swarm->global_min = swarm->particles[index].position;
+                swarm->global_min = swarm->particles[index].local_min;
             else
-                if (compute_bench_fun(swarm->particles[index].local_min, func) < compute_bench_fun(swarm->global_min, func))
+                if (compute_bench_fun(swarm->particles[index].local_min, func) < compute_bench_fun(swarm->global_min, func)) {
                     swarm->global_min = swarm->particles[index].position;
+                    cout << "sargio\n";
+                }
             swarm->n_particles = n_particles;
         }
     }

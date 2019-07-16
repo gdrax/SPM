@@ -21,9 +21,9 @@ int main(int argc, char const *argv[]) {
         return -1;
     }
 
-    //in realtà must be quadrato perfetto
-    int n_iterations = atoi(argv[3]);
-    if (n_iterations <= 0) {
+    //in realtà must be quadrato perfetto sargio
+    int epochs = atoi(argv[3]);
+    if (epochs <= 0) {
         cout << "ERROR: n. of iterations must be positive\n";
     }
 
@@ -31,7 +31,7 @@ int main(int argc, char const *argv[]) {
 
     print_swarm(swarm, target_func);
 
-    for (int i=0; i<n_iterations; i++) {
+    for (int i=0; i<epochs; i++) {
         cout << "Iteration" << i << ": global_min = " << compute_bench_fun(swarm->global_min, target_func) << "\n";
         for (int j=0; j<swarm->n_particles; j++) {
             update_velocity(&(swarm->particles[j]), swarm->global_min);
