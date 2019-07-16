@@ -41,10 +41,10 @@ float const social_parameter = 2;
 float const inertia_weight = 0.9;
 
 /**
- * Generates a random number in [0, 1]
+ * Generates a random number in [0, 1] sargio
 **/
 float random01() {
-    return (float)(rand()+1) / ((float)(RAND_MAX) + 1);
+    return (float)((float)rand() / (float)(RAND_MAX));
 }
 
 /**
@@ -180,7 +180,9 @@ void print_swarm(swarm_t *swarm, string func) {
         cout << "Particle n." << i << ": ";
         cout << "x=" << swarm->particles[i].position.x;
         cout << " y=" << swarm->particles[i].position.y;
-        cout << " local_min=" << compute_bench_fun(swarm->particles[i].local_min, func) << "\n";
+        cout << " local_min=" << compute_bench_fun(swarm->particles[i].local_min, func) << endl;
     }
-    cout << "global_min=" << compute_bench_fun(swarm->global_min, func) << "\n";
+    cout << "global min x: " << swarm->global_min.x << endl;
+    cout << "global min y: " << swarm->global_min.y << endl;
+    cout << "global min:" << compute_bench_fun(swarm->global_min, func) << endl;
 }
