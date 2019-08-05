@@ -11,7 +11,7 @@ int main(int argc, char const *argv[]) {
 
     string target_func = argv[1];
     if (!check_bench_fun(target_func)) {
-        cout << "ERROR: function_name is not valid. The available functions are: \"sphere\", \"himmel\"\n";
+        cout << "ERROR: function_name is not valid. The available functions are: \"sphere\", \"himmel\", \"matyas\"\n";
         return -1;
     }
 
