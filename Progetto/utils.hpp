@@ -214,3 +214,31 @@ void print_swarm(swarm_t *swarm, string func) {
     cout << "global min y: " << swarm->global_min.y << endl;
     cout << "global min:" << compute_bench_fun(swarm->global_min, func) << endl;
 }
+
+/**
+ * Check the arguments
+**/
+int check_arg(int argc, char const *argv[]) {
+    if (argc < 5) {
+        cout << "USAGE: " << argv[0] << " [function_name] [init_type] [n. of particles] [n. iterations]\n";
+        return -1;
+    }
+    if (!check_bench_fun(argv[1])) {
+        cout << "ERROR: function_name is not valid. The available functions are: \"sphere\", \"himmel\", \"matyas\"\n";
+        return -1;
+    }
+    if (!check_init_type(argv[2])) {
+        cout << "ERROR: init_type is not valid. The available initialization are: \"uniform\", \"random\"\n";
+        return -1;
+    }
+    int s = sqrt(atoi(argv[3]));
+    if (argv[3] <= 0 || floor(s) - s != 0) {
+        cout << "ERROR: n. of particles must be positive\n";
+        return -1;
+    }
+    if (argv[4] <= 0) {
+        cout << "ERROR: n. of iterations must be positive\n";
+        return -1;
+    }
+    return 0;
+}
