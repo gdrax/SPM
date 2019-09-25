@@ -23,6 +23,14 @@ typedef struct {
 } particle_t;
 
 /**
+ * Structure for a set of particles assigned to one thread
+ */
+typedef struct {
+    int start;
+    int end;
+} particle_set_t;
+
+/**
  * Structure of a swarm of particles
  */
 typedef struct {
@@ -178,6 +186,7 @@ swarm_t *init_swarm(int n_particles, string func, string init_type) {
     for (int i=0; i<(int)sqrt(n_particles); i++) {
         for (int j=0; j<(int)sqrt(n_particles); j++) {
             int index = i*(int)sqrt(n_particles)+j;
+            //set the initial position
             if (init_type == "uniform") {
                 swarm->particles[index].position.x = domain_min + i*2*domain_max/(float)sqrt(n_particles);
                 swarm->particles[index].position.y = domain_min + j*2*domain_max/(float)sqrt(n_particles);
@@ -188,7 +197,9 @@ swarm_t *init_swarm(int n_particles, string func, string init_type) {
             }
             swarm->particles[index].vx = 0;
             swarm->particles[index].vy = 0;
+            //init local minima
             swarm->particles[index].local_min = swarm->particles[index].position;
+            //compute global minima
             if (i==0 && j==0)
                 swarm->global_min = swarm->particles[index].local_min;
             else
@@ -242,3 +253,44 @@ int check_arg(int argc, char const *argv[]) {
     }
     return 0;
 }
+
+///**
+// * Compute the particle's indexes of the i-th thread of the thread pool
+// * @param n_threads: number of threads in the thread pool
+// * @param n_particles: number of particles to be splitted
+// * @param thread_index: position of the thread
+// * @return
+// */
+//particle_set_t *get_particles_set(int n_threads, int n_particles, int thread_index) {
+//    particle_set_t *particle_set = new particle_set_t;
+//    int block_size = floor(n_particles / n_threads);
+//    int start = thread_index * block_size;
+//    int end = (thread_index + 1) * block_size -1;
+//    if ((n_particles-1 - end) < block_size)
+//        end = n_particles-1;
+//    particle_set->start = start;
+//    particle_set->end = end;
+//    return particle_set;
+//}
+
+
+/**
+ * Compute the particle's indexes of the i-th thread of the thread pool
+ * @param n_threads: number of threads in the thread pool
+ * @param n_particles: number of particles to be splitted
+ * @param thread_index: position of the thread
+ * @return
+ */
+particle_set_t *get_particles_set(int n_threads, int n_particles, int thread_index) {
+    particle_set_t *particle_set = new particle_set_t;
+    int block_size = floor(n_particles / n_threads);
+    int resto = n_particles%n_threads;
+    int start = thread_index * block_size;
+    int end = (thread_index + 1) * block_size -1;
+    start += min(thread_index, resto);
+    end += min(thread_index, resto) + 1;
+    particle_set->start = start;
+    particle_set->end = end;
+    return particle_set;
+}
+//TODO: randomly initialize velocities, interval?
