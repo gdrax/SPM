@@ -4,9 +4,10 @@ SPHERE=0
 MATYAS=0
 HIMMEL=0
 
-for n in {0..100}; do SPHERE=$((${SPHERE}+$(./sequential sphere random 1000 1))); done
-echo sphere $((${SPHERE}/1000));
-for n in {0..100}; do MATYAS=$((${MATYAS}+$(./sequential matyas random 1000 1))); done
-echo matyas: $((${MATYAS}/1000));
-for n in {0..100}; do HIMMEL=$((${HIMMEL}+$(./sequential himmel random 1000 1))); done
-echo himmel $((${HIMMEL}/1000));
+#mean computation time of the three functions over 10k trials
+for n in {0..100}; do SPHERE=$((${SPHERE}+$(./sequential sphere random 1 10000))); done
+echo sphere: $((${SPHERE}/10000)) usec;
+for n in {0..100}; do MATYAS=$((${MATYAS}+$(./sequential matyas random 1 10000))); done
+echo matyas: $((${MATYAS}/10000)) usec;
+for n in {0..100}; do HIMMEL=$((${HIMMEL}+$(./sequential himmel random 1 10000))); done
+echo himmel: $((${HIMMEL}/10000)) usec;
