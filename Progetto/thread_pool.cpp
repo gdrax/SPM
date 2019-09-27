@@ -5,6 +5,12 @@
 
 using namespace std;
 
+swarm_t *swarm;
+
+void thread_work() {
+
+}
+
 int main(int argc, char const *argv[]) {
 
     if (check_arg(argc, argv) == -1)
@@ -24,7 +30,7 @@ int main(int argc, char const *argv[]) {
     int epochs = atoi(argv[4]);
     int n_threads = atoi(argv[5]);
 
-    swarm_t *swarm = init_swarm(n_particles, target_func, init_type);
+    swarm = init_swarm(n_particles, target_func, init_type);
 
 //    vector<thread> thread_pool = new vector<thread>();
 
@@ -32,6 +38,8 @@ int main(int argc, char const *argv[]) {
         particle_set_t *particle_set_i = get_particles_set(n_threads, n_particles, i);
         cout << particle_set_i->start << "    " << particle_set_i->end << endl;
     }
+
+
 
 //    print_swarm(swarm, target_func);
     return 0;

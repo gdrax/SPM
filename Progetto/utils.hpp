@@ -287,8 +287,12 @@ particle_set_t *get_particles_set(int n_threads, int n_particles, int thread_ind
     int resto = n_particles%n_threads;
     int start = thread_index * block_size;
     int end = (thread_index + 1) * block_size -1;
-    start += min(thread_index, resto);
-    end += min(thread_index, resto) + 1;
+    if (resto > 0) {
+        start += min(thread_index, resto);
+        end += min(thread_index, resto);
+        if (thread_index < resto)
+            end++;
+    }
     particle_set->start = start;
     particle_set->end = end;
     return particle_set;
