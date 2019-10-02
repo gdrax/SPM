@@ -1,15 +1,7 @@
-#include<iostream>
+#include <iostream>
 #include <thread>
-#include<vector>
-#include "utils.hpp"
-
-using namespace std;
-
-swarm_t *swarm;
-
-void thread_work() {
-
-}
+#include <vector>
+#include "threads.hpp"
 
 int main(int argc, char const *argv[]) {
 
@@ -30,18 +22,29 @@ int main(int argc, char const *argv[]) {
     int epochs = atoi(argv[4]);
     int n_threads = atoi(argv[5]);
 
-    swarm = init_swarm(n_particles, target_func, init_type);
+    swarm_t *swarm = init_swarm(n_particles, target_func, init_type);
 
-//    vector<thread> thread_pool = new vector<thread>();
+    //initialize threads
+    vector<thread*> threads;
+    vector<Worker_pool*> workers;
+    Coordinator *coordinator = new Coordinator(n_threads, epochs, swarm, target_func);
 
     for (int i=0; i<n_threads; i++) {
         particle_set_t *particle_set_i = get_particles_set(n_threads, n_particles, i);
         cout << particle_set_i->start << "    " << particle_set_i->end << endl;
+        workers.push_back(new Worker_pool(i, particle_set_i, swarm, coordinator, target_func));
     }
 
+    //run threads
+    for (auto w: workers) {
+        threads.push_back(w->run());
+    }
 
+    //join threads
+    for (auto t: threads) {
+        t->join();
+    }
 
-//    print_swarm(swarm, target_func);
+    print_swarm(swarm, target_func);
     return 0;
 }
-

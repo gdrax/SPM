@@ -39,15 +39,6 @@ typedef struct {
     int n_particles; //number of particles in the swarm
 } swarm_t;
 
-/**
- * Structure for thread coordination
- */
-typedef struct {
-    vector<atomic_bool> gate; //start or stop the thread computation
-    vector<atomic_bool> work_done; //check if a thread have done is work
-    int epochs; //epochs that have still to be computed
-} threads_coordinator_t;
-
 /* Domain bounds for the benchmark functions */
 float const sphere_domain_bound = 100;
 float const himmel_domain_bound = 5;
