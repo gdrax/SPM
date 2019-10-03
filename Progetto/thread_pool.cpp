@@ -2,6 +2,7 @@
 #include <thread>
 #include <vector>
 #include "threads.hpp"
+#include "utimer.cpp"
 
 int main(int argc, char const *argv[]) {
 
@@ -31,20 +32,24 @@ int main(int argc, char const *argv[]) {
 
     for (int i=0; i<n_threads; i++) {
         particle_set_t *particle_set_i = get_particles_set(n_threads, n_particles, i);
-        cout << particle_set_i->start << "    " << particle_set_i->end << endl;
+//        cout << particle_set_i->start << "    " << particle_set_i->end << endl;
         workers.push_back(new Worker_pool(i, particle_set_i, swarm, coordinator, target_func));
     }
 
-    //run threads
-    for (auto w: workers) {
-        threads.push_back(w->run());
+    {
+        utimer u("thread_pool");
+
+        //run threads
+        for (auto w: workers) {
+            threads.push_back(w->run());
+        }
+
+        //join threads
+        for (auto t: threads) {
+            t->join();
+        }
     }
 
-    //join threads
-    for (auto t: threads) {
-        t->join();
-    }
-
-    print_swarm(swarm, target_func);
+//    print_swarm(swarm, target_func);
     return 0;
 }

@@ -29,9 +29,12 @@ public:
     void add_work() {
         unique_lock<mutex> lock(this->w_mutex);
         this->n_work++;
+//        cout << this->n_work << endl;
         if (this->n_work == this->n_threads) {
             this->epochs--;
+            this->n_work = 0;
             update_global(this->swarm, this->target_func);
+//            print_swarm(swarm, target_func);
             this->new_work.notify_all();
         }
         else {
@@ -64,10 +67,11 @@ public:
     thread *run() {
         auto body = [&] () {
             while(this->coordinator->getEpochs() > 0) {
-                for (int i = this->particle_set->start; i <= this->particle_set->end; i) {
+                for (int i = this->particle_set->start; i <= this->particle_set->end; i++) {
                     update_velocity(&(this->swarm->particles[i]), this->swarm->global_min, this->target_func);
                     update_local(&(this->swarm->particles[i]), this->target_func);
                 }
+            //cout << "Worker " << this->id << ": work done." << endl;
             this->coordinator->add_work();
             }
             return;

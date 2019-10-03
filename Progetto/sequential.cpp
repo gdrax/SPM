@@ -20,7 +20,7 @@ int main(int argc, char const *argv[]) {
 //    print_swarm(swarm, target_func);
 
     {
-        utimer u("swarm");
+        utimer u("sequential");
 
         for (int i = 0; i < epochs; i++) {
 //            cout << "Iteration" << i << ": global_min = " << compute_bench_fun(swarm->global_min, target_func) << "\n";
