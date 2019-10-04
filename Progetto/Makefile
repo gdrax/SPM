@@ -12,11 +12,11 @@ func_times:
 	./function_time.sh $(EPOCHS)
 
 #compile the sequential version
-sequential: utils.hpp utimer.cpp
+sequential: utils.hpp utimer.cpp sequential.cpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
 
 #compile the thread_pool version
-thread_pool: threads.hpp utimer.cpp utils.hpp
+thread_pool: threads.hpp utimer.cpp utils.hpp thread_pool.cpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
 
 #compile all

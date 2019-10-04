@@ -4,30 +4,24 @@
 #include <thread>
 #include <ctime>
 
+using namespace std;
 
 class utimer {
-  std::chrono::system_clock::time_point start;
-  std::chrono::system_clock::time_point stop;
-  std::string message;
-  using usecs = std::chrono::microseconds;
-  using msecs = std::chrono::milliseconds;
+    chrono::system_clock::time_point start;
+    chrono::system_clock::time_point stop;
+    string message;
+    using usecs = chrono::microseconds;
+    using msecs = chrono::milliseconds;
 
 public:
+    utimer(const string m) : message(m) {
+        start = chrono::system_clock::now();
+    }
 
-  utimer(const std::string m) : message(m) {
-    start = std::chrono::system_clock::now();
-  }
-
-  ~utimer() {
-    stop =
-      std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed =
-      stop - start;
-    auto musec =
-      std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-
-    std::cout << musec
-	      << std::endl;
-
-  }
+    ~utimer() {
+        stop = chrono::system_clock::now();
+        chrono::duration<double> elapsed = stop - start;
+        auto musec = chrono::duration_cast<chrono::microseconds>(elapsed).count();
+        cout << musec << endl;
+    }
 };

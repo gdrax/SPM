@@ -1,13 +1,26 @@
 #include<iostream>
+#include <unistd.h>
+#include <cstdlib>
 #include "utimer.cpp"
 #include "utils.hpp"
 
 using namespace std;
 
-int main(int argc, char const *argv[]) {
+int print = 1;
+
+int main(int argc, char *argv[]) {
 
 	if (check_arg(argc, argv) == -1)
 		return -1;
+
+	int c;
+	while ((c = getopt(argc, argv, "s")) != -1) {
+	    switch(c) {
+            case 's':
+                print = 0;
+                break;
+	    }
+	}
 
 	string target_func = argv[1];
 	string init_type = argv[2];
@@ -16,8 +29,6 @@ int main(int argc, char const *argv[]) {
 
 
 	swarm_t *swarm = init_swarm(n_particles, target_func, init_type);
-
-//    print_swarm(swarm, target_func);
 
 	{
 		utimer u("sequential");
@@ -30,7 +41,11 @@ int main(int argc, char const *argv[]) {
 			}
 			update_global(swarm, target_func);
 		}
-//		print_swarm(swarm, target_func);
+
+		cout << "sariog\n";
+
+//		if (print)
+//		    print_swarm(swarm, target_func);
 	}
 	return 0;
 }

@@ -4,7 +4,7 @@
 #include "threads.hpp"
 #include "utimer.cpp"
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char *argv[]) {
 
     if (check_arg(argc, argv) == -1)
         return -1;
@@ -48,7 +48,7 @@ int main(int argc, char const *argv[]) {
         for (auto t: threads) {
             t->join();
         }
-//        print_swarm(swarm, target_func);
+        print_swarm(swarm, target_func);
     }
     return 0;
 }

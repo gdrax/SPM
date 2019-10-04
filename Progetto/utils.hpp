@@ -4,6 +4,8 @@
 
 using namespace std;
 
+unsigned int seed = 6;
+
 /**
  * Structure for a position in the search space
  */
@@ -54,6 +56,7 @@ float const velocity_clamp = 0.5;
  * Generates a random number in [0, 1] sargio
 **/
 float random01() {
+    srand(seed);
     return (float)((float)rand() / (float)(RAND_MAX));
 }
 
@@ -229,7 +232,7 @@ void print_swarm(swarm_t *swarm, string func) {
 /**
  * Check the arguments
 **/
-int check_arg(int argc, char const *argv[]) {
+int check_arg(int argc, char *argv[]) {
     if (argc < 5) {
         cout << "USAGE: " << argv[0] << " [function_name] [init_type] [n. of particles] [n. iterations]\n";
         return -1;
@@ -253,26 +256,6 @@ int check_arg(int argc, char const *argv[]) {
     }
     return 0;
 }
-
-///**
-// * Compute the particle's indexes of the i-th thread of the thread pool
-// * @param n_threads: number of threads in the thread pool
-// * @param n_particles: number of particles to be splitted
-// * @param thread_index: position of the thread
-// * @return
-// */
-//particle_set_t *get_particles_set(int n_threads, int n_particles, int thread_index) {
-//    particle_set_t *particle_set = new particle_set_t;
-//    int block_size = floor(n_particles / n_threads);
-//    int start = thread_index * block_size;
-//    int end = (thread_index + 1) * block_size -1;
-//    if ((n_particles-1 - end) < block_size)
-//        end = n_particles-1;
-//    particle_set->start = start;
-//    particle_set->end = end;
-//    return particle_set;
-//}
-
 
 /**
  * Compute the particle's indexes of the i-th thread of the thread pool
