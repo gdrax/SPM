@@ -48,8 +48,7 @@ int main(int argc, char const *argv[]) {
         for (auto t: threads) {
             t->join();
         }
+        print_swarm(swarm, target_func);
     }
-
-//    print_swarm(swarm, target_func);
     return 0;
 }

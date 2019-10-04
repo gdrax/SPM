@@ -30,8 +30,7 @@ int main(int argc, char const *argv[]) {
             }
             update_global(swarm, target_func);
         }
+        print_swarm(swarm, target_func);
     }
-
-    //print_swarm(swarm, target_func);
     return 0;
 }
