@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include "queue.hpp"
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -80,42 +81,59 @@ public:
     }
 };
 
+class Worker_farm {
+private:
+	g_queue<input>& input_queue;
+	int id;
+	swarm_t swarm;
+	string target_func;
 
-//class Worker_coordinator {
-//private:
-//    int n_threads;
-//    string target_func;
-//    swarm_t swarm;
-//    threads_coordinator_t *coordinator;
-//
-//public:
-//    Worker_coordinator(int nt, swarm_t *s, threads_coordinator_t *c, string tf) {
-//        n_threads = nt;
-//        swarm = s;
-//        coordinator = c;
-//        target_func = tf;
-//    }
-//
-//    thread *run() {
-//        auto thread_body = [&] () {
-//            while (coordinator->epochs > 0) {
-//                int c=0;
-//                for (int i=0; i<n_threads; i++) {
-//                    if (coordinator->work_done[i] == 1)
-//                        c++;
-//                }
-//                if (c == n_threads) {
-//                    for (int i=0; i<n_threads; i++) {
-//                        coordinator->work_done[i] = 0;
-//                    }
-//                    update_global(swarm, target_func);
-//                    for (int i=0; i<n_threads; i++) {
-//                        coordinator->gate[i] = 1;
-//                    }
-//                }
-//            }
-//        return;
-//        };
-//    return new thread(body);
-//    }
-//};
+public:
+	Worker_farm(int i, g_queue q, swarm_t s, string tf) {
+		this->input_queue = q;
+		this->id = i;
+		this->swarm = s;
+		this->target_func = tf;
+	}
+
+	thread *run() {
+		auto body = [&] () {
+			particle_set_t particle_set = input_queue.pop();
+			while(particle_set.start != -1 && particle_set.end != -1) {
+				for (int i = this->particle_set->start; i <= this->particle_set->end; i++) {
+					update_velocity(&(this->swarm->particles[i]), this->swarm->global_min, this->target_func);
+					update_local(&(this->swarm->particles[i]), this->target_func);
+				}
+			}
+			return;
+		};
+		return new thread(body);
+	}
+};
+
+class Server_farm {
+private:
+	swarm_t swarm;
+	int epochs;
+	string target_func;
+
+public:
+	Server_farm(swarm_t s, int e, string tf) {
+		this->swarm = s;
+		this->epochs = e;
+		this->target_func = tf;
+	}
+
+	thread *run() {
+		auto body = [&] () {
+			while (epochs > 0) {
+				//coordinating stuff
+				update_global(this->swarm, this->target_func);
+				epochs --;
+			}
+			return;
+		};
+		return new thread(body);
+	}
+
+};
