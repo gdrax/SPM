@@ -24,13 +24,13 @@ int main(int argc, char *argv[]) {
 	int n_threads = atoi(argv[5]);
 
 	swarm_t *swarm = init_swarm(n_particles, target_func, init_type);
-	g_queue<particle_set_t> work_queue = new g_queue;
+	Queue<particle_set_t*> work_queue = new Queue<particle_set_t *>(n_threads);
 	int work = 0;
 
 	//initialize threads
 	vector<thread*> threads;
 	vector<Worker_farm*> workers;
-	Server_farm server = new Server_farm(swarm, epochs, target_func, work, n_threads, work_queue);
+	Server_farm *server = new Server_farm(swarm, epochs, target_func, work, n_threads, work_queue, n_particles);
 
 	for (int i=0; i<n_threads; i++) {
 		workers.push_back(new Worker_farm(i, work_queue, swarm, target_func, work));
@@ -43,14 +43,14 @@ int main(int argc, char *argv[]) {
 		for (auto w: workers) {
 			threads.push_back(w->run());
 		}
-
-		threads.push_back(server.run());
-
-		//join threads
+//
+//		threads.push_back(server->run());
+//
+//		//join threads
 		for (auto t: threads) {
 			t->join();
 		}
-		print_swarm(swarm, target_func);
+	//		print_swarm(swarm, target_func);
 	}
 	return 0;
 }

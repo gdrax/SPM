@@ -5,19 +5,16 @@
 
 using namespace std;
 
-template <typename T>
-class g_queue {
+template <typename T>g_queue
+class Queue {
   private:
     mutex q_mutex;
     condition_variable isEmpty;
     deque<T> queue;
+    int work;
 
   public:
-    g_queue(int s) {
-      cout << "Queue " << s <<" created\n";
-    }
-
-    g_queue() {}
+    Queue() {}
 
     void push(T const& value) {
       unique_lock<mutex> lock(this->q_mutex);
@@ -37,4 +34,16 @@ class g_queue {
       unique_lock<mutex> lock(this->q_mutex);
       return(this->queue.empty());
     }
+
+    void reset_work() {
+    	work = 0;
+    }
+
+    void add_work() {
+    	work++;
+    	if (work == n_threads) {
+    		this.workDone.notify_one();
+    	}
+    }
+
 };

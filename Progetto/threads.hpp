@@ -83,22 +83,14 @@ public:
 
 class Worker_farm {
 private:
-	g_queue<particle_set_t*>& input_queue;
+	Queue<particle_set_t*>& input_queue;
 	int id;
 	swarm_t *swarm;
 	string target_func;
 	int work;
 
 public:
-//	Worker_farm(int i, g_queue<particle_set_t*>& q, swarm_t *s, string tf, int w) {
-//		this->input_queue = q;
-//		this->id = i;
-//		this->swarm = s;
-//		this->target_func = tf;
-//		this->work = w;
-//	}
-
-	Worker_farm(int i, g_queue<particle_set_t*>& q, swarm_t *s, string tf, int w):
+	Worker_farm(int i, Queue<particle_set_t*>& q, swarm_t *s, string tf, int w):
 	    id(i), swarm(s), input_queue(q), target_func(tf), work(w) {}
 
 	thread *run() {
@@ -124,25 +116,19 @@ private:
 	string target_func;
 	int work;
 	int n_threads;
-	g_queue<particle_set_t*> work_queue;
+	Queue<particle_set_t*>& work_queue;
 	int n_particles;
 
 public:
-	Server_farm(swarm_t *s, int e, string tf, int w, int nt, g_queue<particle_set_t*> wq, int np) {
-		this->swarm = s;
-		this->epochs = e;
-		this->target_func = tf;
-		this->work = w;
-		this->n_threads = nt;
-		this->work_queue = wq;
-		this->n_particles = np;
-	}
+	Server_farm(swarm_t *s, int e, string tf, int w, int nt, Queue<particle_set_t*>& wq, int np):
+		swarm(s), epochs(e), target_func(tf), work(w), n_threads(nt), work_queue(wq), n_particles(np) {}
 
-	thread *run() {
+
+		thread *run() {
 		auto body = [&] () {
 			while (this->epochs > 0) {
 				if (this->work == 0) {
-					for (int i = 0; i < this->n_threads; i++) {
+					for (int i = 0; i<(this->n_threads); i++) {
 						particle_set_t *particle_set_i = get_particles_set(this->n_threads, this->n_particles, i);
 						this->work_queue.push(particle_set_i);
 					}
