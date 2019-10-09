@@ -42,8 +42,6 @@ int main(int argc, char *argv[]) {
 			update_global(swarm, target_func);
 		}
 
-		cout << "sariog\n";
-
 //		if (print)
 //		    print_swarm(swarm, target_func);
 	}

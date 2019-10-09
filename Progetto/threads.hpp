@@ -90,13 +90,16 @@ private:
 	int work;
 
 public:
-	Worker_farm(int i, g_queue<particle_set_t*>& q, swarm_t *s, string tf, int w) {
-		this->input_queue = q;
-		this->id = i;
-		this->swarm = s;
-		this->target_func = tf;
-		this->work = w;
-	}
+//	Worker_farm(int i, g_queue<particle_set_t*>& q, swarm_t *s, string tf, int w) {
+//		this->input_queue = q;
+//		this->id = i;
+//		this->swarm = s;
+//		this->target_func = tf;
+//		this->work = w;
+//	}
+
+	Worker_farm(int i, g_queue<particle_set_t*>& q, swarm_t *s, string tf, int w):
+	    id(i), swarm(s), input_queue(q), target_func(tf), work(w) {}
 
 	thread *run() {
 		auto body = [&] () {
