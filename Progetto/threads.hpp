@@ -1,10 +1,13 @@
 #include "utils.hpp"
 #include "queue.hpp"
+#include "utimer.cpp"
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 
 using namespace std;
+
+mutex global_min_mutex;
 
 class Coordinator {
 private:
@@ -81,87 +84,41 @@ public:
     }
 };
 
-class Worker_farm {
+class Worker_barrier {
 private:
-	g_queue<particle_set_t*>& input_queue;
-	int id;
-	swarm_t *swarm;
-	string target_func;
-	int work;
+    int id;
+    swarm_t *swarm;
+    string target_func;
+    pthread_barrier_t *barrier;
+    particle_set_t *particle_set;
+    int epochs;
 
 public:
-//	Worker_farm(int i, g_queue<particle_set_t*>& q, swarm_t *s, string tf, int w) {
-//		this->input_queue = q;
-//		this->id = i;
-//		this->swarm = s;
-//		this->target_func = tf;
-//		this->work = w;
-//	}
+    Worker_barrier(int i, swarm_t *s, string tf, pthread_barrier_t *b, particle_set_t *ps, int e):
+            id(i), swarm(s), target_func(tf), barrier(b) , particle_set(ps), epochs(e) {}
 
-	Worker_farm(int i, g_queue<particle_set_t*>& q, swarm_t *s, string tf, int w):
-	    id(i), swarm(s), input_queue(q), target_func(tf), work(w) {}
-
-	thread *run() {
-		auto body = [&] () {
-			particle_set_t *particle_set = this->input_queue.pop();
-			while(particle_set->start != -1 && particle_set->end != -1) {
-				for (int i = particle_set->start; i <= particle_set->end; i++) {
-					update_velocity(&(this->swarm->particles[i]), this->swarm->global_min, this->target_func);
-					update_local(&(this->swarm->particles[i]), this->target_func);
-				}
-				work++;
-			}
-			return;
-		};
-		return new thread(body);
-	}
-};
-
-class Server_farm {
-private:
-	swarm_t *swarm;
-	int epochs;
-	string target_func;
-	int work;
-	int n_threads;
-	g_queue<particle_set_t*> work_queue;
-	int n_particles;
-
-public:
-	Server_farm(swarm_t *s, int e, string tf, int w, int nt, g_queue<particle_set_t*> wq, int np) {
-		this->swarm = s;
-		this->epochs = e;
-		this->target_func = tf;
-		this->work = w;
-		this->n_threads = nt;
-		this->work_queue = wq;
-		this->n_particles = np;
-	}
-
-	thread *run() {
-		auto body = [&] () {
-			while (this->epochs > 0) {
-				if (this->work == 0) {
-					for (int i = 0; i < this->n_threads; i++) {
-						particle_set_t *particle_set_i = get_particles_set(this->n_threads, this->n_particles, i);
-						this->work_queue.push(particle_set_i);
-					}
-				}
-				if (this->work == this->n_threads) {
-					update_global(this->swarm, this->target_func);
-					this->work = 0;
-					this->epochs--;
-				}
-			}
-			particle_set_t *end_set = new particle_set_t;
-			end_set->start = -1;
-			end_set->end = -1;
-			for (int i=0; i<this->n_threads; i++) {
-				this->work_queue.push(end_set);
-			}
-			return;
-		};
-		return new thread(body);
-	}
-
+    thread *run() {
+        auto body = [&] () {
+            {
+                utimer u("worker"+id);
+                for (int j = 0; j < epochs; j++) {
+                    auto start = std::chrono::high_resolution_clock::now();
+                    for (int i = particle_set->start; i <= particle_set->end; i++) {
+                        update_local(&(this->swarm->particles[i]), this->target_func);
+                        if (compute_bench_fun(swarm->particles[i].local_min, target_func) <
+                            compute_bench_fun(swarm->global_min, target_func)) {
+                            lock_guard <mutex> lock(global_min_mutex);
+                            update_single_global(this->swarm, target_func, i);
+                        }
+                    }
+                    for (int i = particle_set->start; i <= particle_set->end; i++) {
+                        update_velocity(&(this->swarm->particles[i]), this->swarm->global_min, this->target_func);
+                    }
+                    pthread_barrier_wait(barrier);
+                }
+            }
+            return;
+        };
+        return new thread(body);
+    }
 };

@@ -22,6 +22,6 @@ public:
         stop = chrono::system_clock::now();
         chrono::duration<double> elapsed = stop - start;
         auto musec = chrono::duration_cast<chrono::microseconds>(elapsed).count();
-        cout << musec << endl;
+        cout << message << ": " << musec << endl;
     }
 };
