@@ -1,6 +1,5 @@
 #include "utils.hpp"
 #include "queue.hpp"
-#include "utimer.cpp"
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -99,23 +98,23 @@ public:
 
     thread *run() {
         auto body = [&] () {
-            {
-                utimer u("worker"+id);
-                for (int j = 0; j < epochs; j++) {
-                    auto start = std::chrono::high_resolution_clock::now();
-                    for (int i = particle_set->start; i <= particle_set->end; i++) {
-                        update_local(&(this->swarm->particles[i]), this->target_func);
-                        if (compute_bench_fun(swarm->particles[i].local_min, target_func) <
-                            compute_bench_fun(swarm->global_min, target_func)) {
-                            lock_guard <mutex> lock(global_min_mutex);
-                            update_single_global(this->swarm, target_func, i);
-                        }
+            for (int j=0; j<epochs; j++) {
+                auto start = std::chrono::high_resolution_clock::now();
+                for (int i = particle_set->start; i <= particle_set->end; i++) {
+                    update_local(&(this->swarm->particles[i]), this->target_func);
+                    if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(swarm->global_min, target_func)) {
+                        lock_guard <mutex> lock(global_min_mutex);
+                        update_single_global(this->swarm, target_func, i);
                     }
-                    for (int i = particle_set->start; i <= particle_set->end; i++) {
-                        update_velocity(&(this->swarm->particles[i]), this->swarm->global_min, this->target_func);
-                    }
-                    pthread_barrier_wait(barrier);
                 }
+                for (int i=particle_set->start; i<=particle_set->end; i++) {
+                    update_velocity(&(this->swarm->particles[i]), this->swarm->global_min, this->target_func);
+                }
+                pthread_barrier_wait(barrier);
+                auto end = std::chrono::high_resolution_clock::now();
+                auto elapsed = end - start;
+                auto usec = chrono::duration_cast<chrono::microseconds>(elapsed).count();
+                cout<<"worker" << id <<": "<< usec << endl;
             }
             return;
         };
