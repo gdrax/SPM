@@ -104,6 +104,7 @@ public:
                     update_local(&(this->swarm->particles[i]), this->target_func);
                     if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(swarm->global_min, target_func)) {
                         lock_guard <mutex> lock(global_min_mutex);
+//                        cout << "called\n";
                         update_single_global(this->swarm, target_func, i);
                     }
                 }
@@ -114,7 +115,7 @@ public:
                 auto end = std::chrono::high_resolution_clock::now();
                 auto elapsed = end - start;
                 auto usec = chrono::duration_cast<chrono::microseconds>(elapsed).count();
-                cout<<"worker" << id <<": "<< usec << endl;
+//                cout<<"worker" << id <<": "<< usec << endl;
             }
             return;
         };

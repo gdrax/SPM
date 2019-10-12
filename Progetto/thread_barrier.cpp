@@ -53,6 +53,7 @@ int main(int argc, char *argv[]) {
         }
 
 //        print_swarm(swarm, target_func);
+        print_global_min(swarm, target_func);
     }
     pthread_barrier_destroy(&work_barrier);
     return 0;

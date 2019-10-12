@@ -57,7 +57,7 @@ float const velocity_clamp = 0.5;
  * Generates a random number in [0, 1] sargio
 **/
 float random01() {
-    srand(seed);
+//    srand(seed);
     return (float)((float)rand() / (float)(RAND_MAX));
 }
 
@@ -238,6 +238,10 @@ void print_swarm(swarm_t *swarm, string func) {
     cout << "global min x: " << swarm->global_min.x << endl;
     cout << "global min y: " << swarm->global_min.y << endl;
     cout << "global min:" << compute_bench_fun(swarm->global_min, func) << endl;
+}
+
+void print_global_min(swarm_t *swarm, string func) {
+    cout << "Global min: " << compute_bench_fun(swarm->global_min, func) << endl;
 }
 
 /**
