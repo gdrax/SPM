@@ -103,6 +103,7 @@ public:
                 {
                     utimer u("Worker" + id);
                     for (int i = this->particle_set->start; i <= this->particle_set->end; i++) {
+                        update_position(&(this->swarm->particles[i]));
                         update_local(&(this->swarm->particles[i]), this->target_func);
                         if (compute_bench_fun(this->swarm->particles[i].local_min, this->target_func) < compute_bench_fun(this->swarm->global_min, this->target_func)) {
                             unique_lock <mutex> lock(global_min_mutex);

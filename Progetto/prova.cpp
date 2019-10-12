@@ -14,14 +14,20 @@ void compute_swarm(swarm_t *swarm, particle_set_t *particle_set, int epochs, str
         {
             utimer u("Worker" + id);
             for (int i = particle_set->start; i <= particle_set->end; i++) {
-                update_local(&(swarm->particles[i]), target_func);
+                update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
+            }
+
+            for (int i = particle_set->start; i <= particle_set->end; i++) {
+                update_position(&(swarm->particles[i]));
+                float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
+                if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
+                    swarm->particles->local_min.x = swarm->particles[i].position.x;
+                    swarm->particles->local_min.y = swarm->particles[i].position.y;
+                }
                 if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(swarm->global_min, target_func)) {
                     unique_lock <mutex> lock(global_min_mutex);
                     update_single_global(swarm, target_func, i);
                 }
-            }
-            for (int i = particle_set->start; i <= particle_set->end; i++) {
-                update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
             }
         }
         pthread_barrier_wait(&barrier);
