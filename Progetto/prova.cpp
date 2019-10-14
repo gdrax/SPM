@@ -14,7 +14,7 @@ void compute_swarm(swarm_t *swarm, particle_set_t *particle_set, int epochs, str
             for (int i = particle_set->start; i <= particle_set->end; i++) {
                 update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
             }
-
+			//pthread_barrier_wait(&barrier);
             for (int i = particle_set->start; i <= particle_set->end; i++) {
                 update_position(&(swarm->particles[i]));
                 float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
