@@ -1,6 +1,7 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <pthread.h>
 #include "threads.hpp"
 
 int main(int argc, char *argv[]) {
@@ -26,17 +27,19 @@ int main(int argc, char *argv[]) {
 
     //initialize threads
     vector<thread*> threads;
-    vector<Worker_pool*> workers;
-    Coordinator *coordinator = new Coordinator(n_threads, epochs, swarm, target_func);
+    vector<Worker_barrier*> workers;
+
+    pthread_barrier_t work_barrier;
+    pthread_barrier_init(&work_barrier, NULL, n_threads);
 
     for (int i=0; i<n_threads; i++) {
         particle_set_t *particle_set_i = get_particles_set(n_threads, n_particles, i);
-        cout << particle_set_i->start << "    " << particle_set_i->end << endl;
-        workers.push_back(new Worker_pool(i, particle_set_i, swarm, coordinator, target_func));
+//        cout << particle_set_i->start << "    " << particle_set_i->end << endl;
+        workers.push_back(new Worker_barrier(i, swarm, target_func, &work_barrier, particle_set_i, epochs));
     }
 
     {
-        utimer u("thread_pool");
+        utimer u("thread_barrier");
 
         //run threads
         for (auto w: workers) {
@@ -47,7 +50,10 @@ int main(int argc, char *argv[]) {
         for (auto t: threads) {
             t->join();
         }
-        print_swarm(swarm, target_func);
+
+//        print_swarm(swarm, target_func);
+        print_global_min(swarm, target_func);
     }
+    pthread_barrier_destroy(&work_barrier);
     return 0;
 }

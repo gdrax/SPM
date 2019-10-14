@@ -1,6 +1,7 @@
 #include <cmath>
 #include <string>
 #include <iostream>
+#include "utimer.cpp"
 
 using namespace std;
 
@@ -45,6 +46,7 @@ typedef struct {
 float const sphere_domain_bound = 100;
 float const himmel_domain_bound = 5;
 float const matyas_domain_bound = 10;
+float const sum_doman_bound = 10;
 
 /* Default parameters to compute the velocity */
 float const cognitive_parameter = 2;
@@ -56,7 +58,7 @@ float const velocity_clamp = 0.5;
  * Generates a random number in [0, 1] sargio
 **/
 float random01() {
-    srand(seed);
+//    srand(seed);
     return (float)((float)rand() / (float)(RAND_MAX));
 }
 
@@ -80,6 +82,9 @@ float compute_bench_fun(position_t p, string func) {
     if (func == "matyas") {
         return 0.26 * (pow(p.x, 2) + pow(p.y, 2)) - 0.48 * p.x * p.y;
     }
+    if (func == "sum") {
+        return p.x + p.y;
+    }
     return 0;
 }
 
@@ -87,7 +92,7 @@ float compute_bench_fun(position_t p, string func) {
  * check if the bechmark function name is valid
  */
 bool check_bench_fun(string func) {
-    if (func == "sphere" || func == "himmel" || func == "matyas")
+    if (func == "sphere" || func == "himmel" || func == "matyas" || func == "sum")
         return true;
     else
         return false;
@@ -113,6 +118,8 @@ float bench_fun_bound(string func) {
         return himmel_domain_bound;
     if (func == "matyas")
         return matyas_domain_bound;
+    if (func == "sum")
+        return sum_doman_bound;
     return 0;
 }
 
@@ -177,6 +184,11 @@ void update_global(swarm_t *swarm, string func) {
     }
 }
 
+void update_single_global(swarm_t *swarm, string func, int index) {
+    swarm->global_min.x = swarm->particles[index].position.x;
+    swarm->global_min.y = swarm->particles[index].position.y;
+}
+
 /**
  * Computes the initial position of the particles in the search space
  */
@@ -229,6 +241,10 @@ void print_swarm(swarm_t *swarm, string func) {
     cout << "global min:" << compute_bench_fun(swarm->global_min, func) << endl;
 }
 
+void print_global_min(swarm_t *swarm, string func) {
+    cout << "Global min: " << compute_bench_fun(swarm->global_min, func) << endl;
+}
+
 /**
  * Check the arguments
 **/
@@ -238,7 +254,7 @@ int check_arg(int argc, char *argv[]) {
         return -1;
     }
     if (!check_bench_fun(argv[1])) {
-        cout << "ERROR: function_name is not valid. The available functions are: \"sphere\", \"himmel\", \"matyas\"\n";
+        cout << "ERROR: function_name is not valid. The available functions are: \"sphere\", \"himmel\", \"matyas\", \"sum\"\n";
         return -1;
     }
     if (!check_init_type(argv[2])) {
