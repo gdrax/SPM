@@ -1,6 +1,18 @@
 #include <cmath>
 #include <string>
 #include <iostream>
+#include <ctime>
+#include <time.h>
+#include <algorithm>
+#include <functional>
+#include <random>
+#include <chrono>
+#include <stdlib.h>
+#include <thread>
+#include <vector>
+#include <atomic>
+#include <pthread.h>
+#include <mutex>
 #include "utimer.cpp"
 
 using namespace std;
@@ -46,7 +58,6 @@ typedef struct {
 float const sphere_domain_bound = 100;
 float const himmel_domain_bound = 5;
 float const matyas_domain_bound = 10;
-float const sum_doman_bound = 10;
 
 /* Default parameters to compute the velocity */
 float const cognitive_parameter = 2;
@@ -59,8 +70,18 @@ float const velocity_clamp = 0.5;
 **/
 float random01() {
 //    srand(seed);
-    return (float)((float)rand() / (float)(RAND_MAX));
+//    return rand() / RAND_MAX;
+	return 0.5;
 }
+
+//float random01() {
+//	float const a = 0;
+//	float const b = 1;
+//	static thread_local mt19937* generator = nullptr;
+//	if (!generator) generator = new mt19937(clock() + std::hash<std::thread::id>()(std::this_thread::get_id()));
+//	std::uniform_real_distribution<float> distribution(a, b);
+//	return distribution(*generator);
+//}
 
 /**
  * Generates a random number in [a, b] sargio
@@ -82,9 +103,6 @@ float compute_bench_fun(position_t p, string func) {
     if (func == "matyas") {
         return 0.26 * (pow(p.x, 2) + pow(p.y, 2)) - 0.48 * p.x * p.y;
     }
-    if (func == "sum") {
-        return p.x + p.y;
-    }
     return 0;
 }
 
@@ -92,7 +110,7 @@ float compute_bench_fun(position_t p, string func) {
  * check if the bechmark function name is valid
  */
 bool check_bench_fun(string func) {
-    if (func == "sphere" || func == "himmel" || func == "matyas" || func == "sum")
+    if (func == "sphere" || func == "himmel" || func == "matyas")
         return true;
     else
         return false;
@@ -118,8 +136,6 @@ float bench_fun_bound(string func) {
         return himmel_domain_bound;
     if (func == "matyas")
         return matyas_domain_bound;
-    if (func == "sum")
-        return sum_doman_bound;
     return 0;
 }
 
@@ -254,7 +270,7 @@ int check_arg(int argc, char *argv[]) {
         return -1;
     }
     if (!check_bench_fun(argv[1])) {
-        cout << "ERROR: function_name is not valid. The available functions are: \"sphere\", \"himmel\", \"matyas\", \"sum\"\n";
+        cout << "ERROR: function_name is not valid. The available functions are: \"sphere\", \"himmel\", \"matyas\"\n";
         return -1;
     }
     if (!check_init_type(argv[2])) {

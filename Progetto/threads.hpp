@@ -100,9 +100,7 @@ public:
         auto body = [&] () {
 //            cout << this->particle_set->start << "-" << this->particle_set->end << endl;
             for (int j=0; j<epochs; j++) {
-                {
-                    utimer u("Worker" + id);
-                    for (int i = this->particle_set->start; i <= this->particle_set->end; i++) {
+                for (int i = this->particle_set->start; i <= this->particle_set->end; i++) {
                         update_position(&(this->swarm->particles[i]));
                         update_local(&(this->swarm->particles[i]), this->target_func);
                         if (compute_bench_fun(this->swarm->particles[i].local_min, this->target_func) < compute_bench_fun(this->swarm->global_min, this->target_func)) {
@@ -113,7 +111,7 @@ public:
                     for (int i = this->particle_set->start; i <= this->particle_set->end; i++) {
                         update_velocity(&(this->swarm->particles[i]), this->swarm->global_min, this->target_func);
                     }
-                }
+
                 pthread_barrier_wait(this->barrier);
             }
             return;

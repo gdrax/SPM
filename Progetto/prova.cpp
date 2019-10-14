@@ -11,8 +11,6 @@ using namespace std;
 
 void compute_swarm(swarm_t *swarm, particle_set_t *particle_set, int epochs, string target_func, int id) {
     for (int j=0; j<epochs; j++) {
-        {
-            utimer u("Worker" + id);
             for (int i = particle_set->start; i <= particle_set->end; i++) {
                 update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
             }
@@ -28,7 +26,6 @@ void compute_swarm(swarm_t *swarm, particle_set_t *particle_set, int epochs, str
                     unique_lock <mutex> lock(global_min_mutex);
                     update_single_global(swarm, target_func, i);
                 }
-            }
         }
         pthread_barrier_wait(&barrier);
     }

@@ -5,13 +5,15 @@
 
 using namespace std;
 
-template <typename T>g_queue
+template <typename T>
 class Queue {
   private:
     mutex q_mutex;
     condition_variable isEmpty;
+    condition_variable workDone;
     deque<T> queue;
     int work;
+    int n_threads;
 
   public:
     Queue() {}
@@ -36,7 +38,8 @@ class Queue {
     }
 
     void reset_work() {
-    	work = 0;
+    	unique_lock<mutex> lock(this->q_mutex);
+    	this->workDone.wait(lock);
     }
 
     void add_work() {
@@ -45,5 +48,4 @@ class Queue {
     		this.workDone.notify_one();
     	}
     }
-
 };
