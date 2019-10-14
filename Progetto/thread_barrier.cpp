@@ -2,7 +2,7 @@
 #include <thread>
 #include <vector>
 #include <pthread.h>
-#include "threads.hpp"
+#include "utils.hpp"
 
 int main(int argc, char *argv[]) {
 

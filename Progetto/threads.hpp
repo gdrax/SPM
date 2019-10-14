@@ -6,8 +6,6 @@
 
 using namespace std;
 
-mutex global_min_mutex;
-
 class Coordinator {
 private:
     int n_work;

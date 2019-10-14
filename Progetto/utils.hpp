@@ -1,17 +1,6 @@
-#include <cmath>
-#include <string>
 #include <iostream>
-#include <ctime>
-#include <time.h>
-#include <algorithm>
 #include <functional>
 #include <random>
-#include <chrono>
-#include <stdlib.h>
-#include <thread>
-#include <vector>
-#include <atomic>
-#include <pthread.h>
 #include <mutex>
 #include "utimer.cpp"
 
@@ -19,8 +8,11 @@ using namespace std;
 
 unsigned int seed = 6;
 
+mutex global_min_mutex;
+pthread_barrier_t barrier;
+
 /**
- * Structure for a position in the search space
+ * Structure of a position in the search space
  */
 typedef struct {
     float x;
@@ -28,7 +20,7 @@ typedef struct {
 } position_t;
 
 /**
- * Structure for a particle of the swarm
+ * Structure of a particle of the swarm
  */
 typedef struct {
     position_t position; //current position of the particle in the search space
@@ -38,7 +30,7 @@ typedef struct {
 } particle_t;
 
 /**
- * Structure for a set of particles assigned to one thread
+ * Indexes of the particles assigned to a thread
  */
 typedef struct {
     int start;
@@ -57,34 +49,25 @@ typedef struct {
 /* Domain bounds for the benchmark functions */
 float const sphere_domain_bound = 100;
 float const himmel_domain_bound = 5;
-float const matyas_domain_bound = 10;
+float const sum_domain_bound = 100;
 
-/* Default parameters to compute the velocity */
+/* Default parameters for the computation of the velocity */
 float const cognitive_parameter = 2;
 float const social_parameter = 2;
 float const inertia_weight = 0.9;
 float const velocity_clamp = 0.5;
 
 /**
- * Generates a random number in [0, 1] sargio
-**/
+ * Thread safe random number generator in the interval [0, 1)
+ */
 float random01() {
-//    srand(seed);
-//    return rand() / RAND_MAX;
-	return 0.5;
+	static thread_local mt19937 generator(seed);
+	uniform_real_distribution<float> distribution(0.0, 1.0);
+	return distribution(generator);
 }
 
-//float random01() {
-//	float const a = 0;
-//	float const b = 1;
-//	static thread_local mt19937* generator = nullptr;
-//	if (!generator) generator = new mt19937(clock() + std::hash<std::thread::id>()(std::this_thread::get_id()));
-//	std::uniform_real_distribution<float> distribution(a, b);
-//	return distribution(*generator);
-//}
-
 /**
- * Generates a random number in [a, b] sargio
+ * Generates a random number in the interval [a, b)
  */
 float randAB(float a, float b) {
     return a + random01() * (b-a);
@@ -100,17 +83,20 @@ float compute_bench_fun(position_t p, string func) {
     if (func == "himmel") {
         return pow(pow(p.x, 2) + p.y + 11, 2) + pow(p.x + pow(p.y, 2) + 7, 2);
     }
-    if (func == "matyas") {
-        return 0.26 * (pow(p.x, 2) + pow(p.y, 2)) - 0.48 * p.x * p.y;
-    }
+//    if (func == "matyas") {
+//        return 0.26 * (pow(p.x, 2) + pow(p.y, 2)) - 0.48 * p.x * p.y;
+//    }
+	if (func == "sum") {
+		return p.x+p.y;
+	}
     return 0;
 }
 
-/*
+/**
  * check if the bechmark function name is valid
  */
 bool check_bench_fun(string func) {
-    if (func == "sphere" || func == "himmel" || func == "matyas")
+    if (func == "sphere" || func == "himmel" || func == "sum")
         return true;
     else
         return false;
@@ -134,8 +120,10 @@ float bench_fun_bound(string func) {
         return sphere_domain_bound;
     if (func == "himmel")
         return himmel_domain_bound;
-    if (func == "matyas")
-        return matyas_domain_bound;
+//    if (func == "matyas")
+//        return matyas_domain_bound;
+	if (func == "sum")
+		return sum_domain_bound;
     return 0;
 }
 
@@ -178,7 +166,7 @@ void update_position(particle_t *particle) {
 }
 
 /**
- * Update the position of the local minimun of a particle
+ * Update the position and the local minimun of a particle
  */
 void update_local(particle_t *particle, string func) {
     update_position(particle);
@@ -191,15 +179,18 @@ void update_local(particle_t *particle, string func) {
 /**
  * Update the position of the global minimum
  */
-void update_global(swarm_t *swarm, string func) {
-    for (int i=0; i<swarm->n_particles; i++) {
-        if (compute_bench_fun(swarm->particles[i].position, func) < compute_bench_fun(swarm->global_min, func)) {
-            swarm->global_min.x = swarm->particles[i].position.x;
-            swarm->global_min.y = swarm->particles[i].position.y;
-        }
-    }
-}
+//void update_global(swarm_t *swarm, string func) {
+//    for (int i=0; i<swarm->n_particles; i++) {
+//        if (compute_bench_fun(swarm->particles[i].position, func) < compute_bench_fun(swarm->global_min, func)) {
+//            swarm->global_min.x = swarm->particles[i].position.x;
+//            swarm->global_min.y = swarm->particles[i].position.y;
+//        }
+//    }
+//}
 
+/**
+ * Update the position of the global minimum
+ */
 void update_single_global(swarm_t *swarm, string func, int index) {
     swarm->global_min.x = swarm->particles[index].position.x;
     swarm->global_min.y = swarm->particles[index].position.y;
@@ -257,6 +248,9 @@ void print_swarm(swarm_t *swarm, string func) {
     cout << "global min:" << compute_bench_fun(swarm->global_min, func) << endl;
 }
 
+/**
+ * Print the global min
+ */
 void print_global_min(swarm_t *swarm, string func) {
     cout << "Global min: " << compute_bench_fun(swarm->global_min, func) << endl;
 }
@@ -270,7 +264,7 @@ int check_arg(int argc, char *argv[]) {
         return -1;
     }
     if (!check_bench_fun(argv[1])) {
-        cout << "ERROR: function_name is not valid. The available functions are: \"sphere\", \"himmel\", \"matyas\"\n";
+        cout << "ERROR: function_name is not valid. The available functions are: \"sphere\", \"himmel\"\n";
         return -1;
     }
     if (!check_init_type(argv[2])) {
@@ -311,5 +305,66 @@ particle_set_t *get_particles_set(int n_threads, int n_particles, int thread_ind
     particle_set->start = start;
     particle_set->end = end;
     return particle_set;
+}
+
+/**
+ * Computes the iteration phase of the PSO
+ * @param particle_set: set of particles of the swarm assigned to the thread
+ * @param epochs: number of iterations to be computed
+ * @param target_func: function to be optimized (sphere or himmel)
+ * @param id: id of the thread
+ */
+void compute_swarm(swarm_t *swarm, particle_set_t *particle_set, int epochs, string target_func, int id) {
+	for (int j=0; j<epochs; j++) {
+		//update velocities
+		for (int i = particle_set->start; i <= particle_set->end; i++) {
+			update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
+		}
+		for (int i = particle_set->start; i <= particle_set->end; i++) {
+			update_position(&(swarm->particles[i]));
+			float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
+			//update local minimum
+			if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
+				swarm->particles->local_min.x = swarm->particles[i].position.x;
+				swarm->particles->local_min.y = swarm->particles[i].position.y;
+			}
+			//update global minimum with lock
+			if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(swarm->global_min, target_func)) {
+				unique_lock <mutex> lock(global_min_mutex);
+				update_single_global(swarm, target_func, i);
+			}
+		}
+		//wait for all other threads
+		pthread_barrier_wait(&barrier);
+	}
+	return;
+}
+
+
+/**
+ * Computed the iteration phase of the PSO sequentially
+ * @param swarm: swarm to update
+ * @param epochs: number of iterations
+ * @param target_func: function to minimize
+ * @param n_particles: number of particle in the swarm
+ */
+void compute_swarm_sequential(swarm_t *swarm, int epochs, string target_func) {
+	for (int j=0; j<epochs; j++) {
+		for (int i=0; i<swarm->n_particles; i++) {
+			update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
+		}
+		for (int i=0; i<swarm->n_particles; i++) {
+			update_position(&(swarm->particles[i]));
+			float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
+			if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
+				swarm->particles->local_min.x = swarm->particles[i].position.x;
+				swarm->particles->local_min.y = swarm->particles[i].position.y;
+			}
+			if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(swarm->global_min, target_func)) {
+				update_single_global(swarm, target_func, i);
+			}
+		}
+	}
+	return;
 }
 //TODO: randomly initialize velocities, interval?
