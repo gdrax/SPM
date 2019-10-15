@@ -23,7 +23,7 @@ public:
 					update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
 				}
 				for (int i = particle_set->start; i <= particle_set->end; i++) {
-					update_position(&(swarm->particles[i]));
+					update_position(&(swarm->particles[i]), target_func);
 					float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
 					//update local minimum
 					if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {

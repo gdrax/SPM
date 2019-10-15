@@ -133,7 +133,7 @@ float bench_fun_bound(string func) {
 void compute_velocity_X(particle_t *particle, position_t global_min, string func) {
     float local_diff = particle->local_min.x - particle->position.x;
     float global_diff = global_min.x - particle->position.x;
-    particle->vx = inertia_weight*particle->vx + cognitive_parameter*random01()*local_diff + social_parameter*random01()*global_diff;
+    particle->vx = inertia_weight*particle->vx + cognitive_parameter*0.3*local_diff + social_parameter*0.3*global_diff;
     if (particle->vx > velocity_clamp*bench_fun_bound(func))
         particle->vx = velocity_clamp*bench_fun_bound(func);
 }
@@ -144,7 +144,7 @@ void compute_velocity_X(particle_t *particle, position_t global_min, string func
 void compute_velocity_Y(particle_t *particle, position_t global_min, string func) {
     float local_diff = particle->local_min.y - particle->position.y;
     float global_diff = global_min.y - particle->position.y;
-    particle->vy =  inertia_weight*particle->vy + cognitive_parameter*random01()*local_diff + social_parameter*random01()*global_diff;
+    particle->vy =  inertia_weight*particle->vy + cognitive_parameter*0.3*local_diff + social_parameter*0.3*global_diff;
     if (particle->vy > velocity_clamp*bench_fun_bound(func))
         particle->vy = velocity_clamp*bench_fun_bound(func);
 }
@@ -160,16 +160,20 @@ void update_velocity(particle_t *particle, position_t global_min, string func) {
 /**
  * Update the position of a particle
  */
-void update_position(particle_t *particle) {
+void update_position(particle_t *particle, string func) {
     particle->position.x += particle->vx;
     particle->position.y += particle->vy;
+    if (abs(particle->position.x > bench_fun_bound(func)))
+        particle->position.x = bench_fun_bound(func);
+    if (abs(particle->position.y > bench_fun_bound(func)))
+        particle->position.y = bench_fun_bound(func);
 }
 
 /**
  * Update the position and the local minimun of a particle
  */
 void update_local(particle_t *particle, string func) {
-    update_position(particle);
+    update_position(particle, func);
     if (compute_bench_fun(particle->position, func) <  compute_bench_fun(particle->local_min, func)) {
         particle->local_min.x = particle->position.x;
         particle->local_min.y = particle->position.y;
@@ -321,7 +325,7 @@ void compute_swarm(swarm_t *swarm, particle_set_t *particle_set, int epochs, str
 			update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
 		}
 		for (int i = particle_set->start; i <= particle_set->end; i++) {
-			update_position(&(swarm->particles[i]));
+			update_position(&(swarm->particles[i]), target_func);
 			float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
 			//update local minimum
 			if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
@@ -354,7 +358,7 @@ void compute_swarm_sequential(swarm_t *swarm, int epochs, string target_func) {
 			update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
 		}
 		for (int i=0; i<swarm->n_particles; i++) {
-			update_position(&(swarm->particles[i]));
+			update_position(&(swarm->particles[i]), target_func);
 			float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
 			if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
 				swarm->particles->local_min.x = swarm->particles[i].position.x;
