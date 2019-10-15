@@ -1,8 +1,7 @@
 #include <iostream>
-#include <thread>
 #include <vector>
 #include <pthread.h>
-#include "utils.hpp"
+#include "threads.hpp"
 
 int main(int argc, char *argv[]) {
 

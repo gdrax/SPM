@@ -5,7 +5,7 @@ EPOCHS = 10000
 
 EXECUTABLE   = sequential \
 		  	   thread_pool\
-		  	   prova\
+		  	   thread_barrier\
 
 #estimate the computing time of the different function making the average of 10000 runs
 func_times:
@@ -18,6 +18,9 @@ sequential: utils.hpp utimer.cpp sequential.cpp
 
 #compile the thread_pool version
 thread_pool: threads.hpp utimer.cpp utils.hpp thread_pool.cpp
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
+
+thread_barrier: thread_barrier.cpp utimer.cpp utils.hpp threads.hpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
 
 #compile all

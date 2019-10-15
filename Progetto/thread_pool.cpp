@@ -25,11 +25,10 @@ int main(int argc, char *argv[]) {
 	int epochs = atoi(argv[4]);
 	int n_threads = atoi(argv[5]);
 
+	//initialize swarm
 	swarm_t *swarm = init_swarm(n_particles, target_func, init_type);
 
-	//initialize threads
 	vector<thread> threads;
-
 	pthread_barrier_init(&barrier, NULL, n_threads);
 
 	{
@@ -46,7 +45,7 @@ int main(int argc, char *argv[]) {
 		}
 
 //        print_swarm(swarm, target_func);
-		print_global_min(swarm, target_func);
+//		print_global_min(swarm, target_func);
 	}
 	pthread_barrier_destroy(&barrier);
 	return 0;
