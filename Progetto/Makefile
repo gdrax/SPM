@@ -23,6 +23,14 @@ thread_pool: threads.hpp utimer.cpp utils.hpp thread_pool.cpp
 thread_barrier: thread_barrier.cpp utimer.cpp utils.hpp threads.hpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
 
+measure_time_local:
+	make thread_barrier
+	./measure_time 10000 1000 4
+
+mesaure_time_phi:
+	make thread_barrier
+	./measure_time_phi 10000 1000 256
+
 #compile all
 compile:
 	make $(EXECUTABLE)
