@@ -133,7 +133,7 @@ float bench_fun_bound(string func) {
 void compute_velocity_X(particle_t *particle, position_t global_min, string func) {
     float local_diff = particle->local_min.x - particle->position.x;
     float global_diff = global_min.x - particle->position.x;
-    particle->vx = inertia_weight*particle->vx + cognitive_parameter*0.3*local_diff + social_parameter*0.3*global_diff;
+    particle->vx = inertia_weight*particle->vx + cognitive_parameter*random01()*local_diff + social_parameter*random01()*global_diff;
     if (particle->vx > velocity_clamp*bench_fun_bound(func))
         particle->vx = velocity_clamp*bench_fun_bound(func);
 }
@@ -144,7 +144,7 @@ void compute_velocity_X(particle_t *particle, position_t global_min, string func
 void compute_velocity_Y(particle_t *particle, position_t global_min, string func) {
     float local_diff = particle->local_min.y - particle->position.y;
     float global_diff = global_min.y - particle->position.y;
-    particle->vy =  inertia_weight*particle->vy + cognitive_parameter*0.3*local_diff + social_parameter*0.3*global_diff;
+    particle->vy =  inertia_weight*particle->vy + cognitive_parameter*random01()*local_diff + social_parameter*random01()*global_diff;
     if (particle->vy > velocity_clamp*bench_fun_bound(func))
         particle->vy = velocity_clamp*bench_fun_bound(func);
 }
@@ -163,10 +163,14 @@ void update_velocity(particle_t *particle, position_t global_min, string func) {
 void update_position(particle_t *particle, string func) {
     particle->position.x += particle->vx;
     particle->position.y += particle->vy;
-    if (abs(particle->position.x > bench_fun_bound(func)))
+    if (particle->position.x > bench_fun_bound(func))
         particle->position.x = bench_fun_bound(func);
-    if (abs(particle->position.y > bench_fun_bound(func)))
+    if (particle->position.y > bench_fun_bound(func))
         particle->position.y = bench_fun_bound(func);
+	if (particle->position.x < -bench_fun_bound(func))
+		particle->position.x = -bench_fun_bound(func);
+	if (particle->position.y < -bench_fun_bound(func))
+		particle->position.y = -bench_fun_bound(func);
 }
 
 /**
