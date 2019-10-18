@@ -1,0 +1,10 @@
+
+1 thread: 63603205 usec
+2 thread: 33632237 usec
+4 thread: 16844326 usec
+8 thread: 8481015 usec
+16 thread: 4360841 usec
+32 thread: 2493859 usec
+64 thread: 2502528 usec
+128 thread: 2020695 usec
+256 thread: 2912270 usec
