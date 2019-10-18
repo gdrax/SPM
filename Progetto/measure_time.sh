@@ -6,6 +6,8 @@ THREADS=$3
 TIME=0
 OUTPUT=./local_times.txt
 
+echo > $OUTPUT
+
 #mean computation time of PARTICLES and EPOCHS with THREADS over 100 trials
 echo Computing $PARTICLES particles over $EPOCHS epochs...
 
