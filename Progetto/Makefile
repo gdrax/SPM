@@ -27,9 +27,9 @@ measure_time_local:
 	make thread_pool
 	./measure_time.sh 1000 100 4
 
-mesaure_time_phi:
+measure_time_phi:
 	make thread_pool
-	./measure_time_phi.sh 1000 1000 256
+	./measure_time_phi.sh 10000 1000 256
 
 #compile all
 compile:
