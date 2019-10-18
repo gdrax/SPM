@@ -86,9 +86,9 @@ float compute_bench_fun(position_t p, string func) {
 //    if (func == "matyas") {
 //        return 0.26 * (pow(p.x, 2) + pow(p.y, 2)) - 0.48 * p.x * p.y;
 //    }
-	if (func == "sum") {
-		return p.x+p.y;
-	}
+//	if (func == "sum") {
+//		return p.x+p.y;
+//	}
     return 0;
 }
 
@@ -122,8 +122,8 @@ float bench_fun_bound(string func) {
         return himmel_domain_bound;
 //    if (func == "matyas")
 //        return matyas_domain_bound;
-	if (func == "sum")
-		return sum_domain_bound;
+//	if (func == "sum")
+//		return sum_domain_bound;
     return 0;
 }
 
