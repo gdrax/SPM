@@ -24,12 +24,12 @@ thread_barrier: thread_barrier.cpp utimer.cpp utils.hpp threads.hpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
 
 measure_time_local:
-	make thread_barrier
-	./measure_time 10000 1000 4
+	make thread_pool
+	./measure_time.sh 1000 100 4
 
 mesaure_time_phi:
-	make thread_barrier
-	./measure_time_phi 10000 1000 256
+	make thread_pool
+	./measure_time_phi.sh 1000 1000 256
 
 #compile all
 compile:
