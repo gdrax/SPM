@@ -32,7 +32,8 @@ int main(int argc, char *argv[]) {
     pthread_barrier_init(&work_barrier, NULL, n_threads);
 
     for (int i=0; i<n_threads; i++) {
-        workers.push_back(new Worker_barrier(i, swarm, target_func, &work_barrier, n_threads, n_particles, epochs));
+        particle_set_t *particle_set_i = get_particles_set(n_threads, n_particles, i);
+        workers.push_back(new Worker_barrier(i, swarm, target_func, &work_barrier, particle_set_i, epochs));
     }
 
     {

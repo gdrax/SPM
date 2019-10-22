@@ -9,15 +9,19 @@ private:
     swarm_t *swarm;
     string target_func;
     pthread_barrier_t *barrier;
-    particle_set_t *particle_set;
+    int n_threads;
+    int n_particles;
     int epochs;
 
 public:
-    Worker_barrier(int i, swarm_t *s, string tf, pthread_barrier_t *b, particle_set_t *ps, int e):
+    Worker_barrier(int i, swarm_t *s, string tf, pthread_barrier_t *b, int nt , int np, int e):
             id(i), swarm(s), target_func(tf), barrier(b) , particle_set(ps), epochs(e) {}
 
     thread *run() {
         auto body = [&] () {
+            particle_set = get_particles_set(n_threads, n_particles, i);
+
+            pthread_barrier_wait(barrier);
             for (int j=0; j<epochs; j++) {
 				for (int i = particle_set->start; i <= particle_set->end; i++) {
 					update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
@@ -36,7 +40,7 @@ public:
 						update_single_global(swarm, target_func, i);
 					}
 				}
-                pthread_barrier_wait(this->barrier);
+                pthread_barrier_wait(barrier);
             }
             return;
         };
