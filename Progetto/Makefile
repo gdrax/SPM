@@ -23,6 +23,9 @@ thread_pool: threads.hpp utimer.cpp utils.hpp thread_pool.cpp
 thread_barrier: thread_barrier.cpp utimer.cpp utils.hpp threads.hpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
 
+multi_thread: multi_thread.cpp utimer.cpp utils.hpp threads.hpp
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
+
 measure_time_local:
 	make thread_pool
 	./measure_time.sh 1000 100 4

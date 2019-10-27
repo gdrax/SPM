@@ -11,6 +11,8 @@ unsigned int seed = 6;
 mutex global_min_mutex;
 pthread_barrier_t barrier;
 
+int work=0;
+
 /**
  * Structure of a position in the search space
  */
@@ -187,14 +189,14 @@ void update_local(particle_t *particle, string func) {
 /**
  * Update the position of the global minimum
  */
-//void update_global(swarm_t *swarm, string func) {
-//    for (int i=0; i<swarm->n_particles; i++) {
-//        if (compute_bench_fun(swarm->particles[i].position, func) < compute_bench_fun(swarm->global_min, func)) {
-//            swarm->global_min.x = swarm->particles[i].position.x;
-//            swarm->global_min.y = swarm->particles[i].position.y;
-//        }
-//    }
-//}
+void update_global(swarm_t *swarm, string func) {
+    for (int i=0; i<swarm->n_particles; i++) {
+        if (compute_bench_fun(swarm->particles[i].position, func) < compute_bench_fun(swarm->global_min, func)) {
+            swarm->global_min.x = swarm->particles[i].position.x;
+            swarm->global_min.y = swarm->particles[i].position.y;
+        }
+    }
+}
 
 /**
  * Update the position of the global minimum
@@ -322,8 +324,10 @@ particle_set_t *get_particles_set(int n_threads, int n_particles, int thread_ind
  * @param target_func: function to be optimized (sphere or himmel)
  * @param id: id of the thread
  */
-void compute_swarm(swarm_t *swarm, particle_set_t *particle_set, int epochs, string target_func, int id) {
-	for (int j=0; j<epochs; j++) {
+void compute_swarm(swarm_t *swarm, int epochs, string target_func, int id, int n_particles, int n_threads) {
+    particle_set_t *particle_set = get_particles_set(n_threads, n_particles, id);
+    pthread_barrier_wait(&barrier);
+    for (int j=0; j<epochs; j++) {
 		//update velocities
 		for (int i = particle_set->start; i <= particle_set->end; i++) {
 			update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
@@ -342,7 +346,6 @@ void compute_swarm(swarm_t *swarm, particle_set_t *particle_set, int epochs, str
 				update_single_global(swarm, target_func, i);
 			}
 		}
-		//wait for all other threads
 		pthread_barrier_wait(&barrier);
 	}
 	return;
@@ -374,5 +377,46 @@ void compute_swarm_sequential(swarm_t *swarm, int epochs, string target_func) {
 		}
 	}
 	return;
+}
+
+/**
+ * Computes the iteration phase of the PSO
+ * @param particle_set: set of particles of the swarm assigned to the thread
+ * @param epochs: number of iterations to be computed
+ * @param target_func: function to be optimized (sphere or himmel)
+ * @param id: id of the thread
+ */
+void compute_swarm_multi_thread(swarm_t *swarm, int epochs, string target_func, int id, int n_threads, int n_particles) {
+    particle_set_t *particle_set = get_particles_set(n_threads, n_particles, id);
+    work++;
+    //wait for all other threads
+    if (work == n_threads) {
+        update_global(swarm, target_func);
+        work=0;
+    }
+    pthread_barrier_wait(&barrier);
+    for (int j=0; j<epochs; j++) {
+        //update velocities
+        for (int i = particle_set->start; i <= particle_set->end; i++) {
+            update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
+        }
+        for (int i = particle_set->start; i <= particle_set->end; i++) {
+            update_position(&(swarm->particles[i]), target_func);
+            float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
+            //update local minimum
+            if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
+                swarm->particles->local_min.x = swarm->particles[i].position.x;
+                swarm->particles->local_min.y = swarm->particles[i].position.y;
+            }
+        }
+        work++;
+        if (work == n_threads) {
+            update_global(swarm, target_func);
+//            cout << "barrier hitted: " << j;
+            work=0;
+        }
+        pthread_barrier_wait(&barrier);
+    }
+    return;
 }
 //TODO: randomly initialize velocities, interval?

@@ -1,7 +1,10 @@
-#include <iostream>
+#include <thread>
 #include <vector>
 #include <pthread.h>
-#include "threads.hpp"
+#include <mutex>
+#include "utils.hpp"
+
+using namespace std;
 
 int main(int argc, char *argv[]) {
 
@@ -22,36 +25,28 @@ int main(int argc, char *argv[]) {
     int epochs = atoi(argv[4]);
     int n_threads = atoi(argv[5]);
 
+    //initialize swarm
     swarm_t *swarm = init_swarm(n_particles, target_func, init_type);
 
-    //initialize threads
-    vector<thread*> threads;
-    vector<Worker_barrier*> workers;
-
-    pthread_barrier_t work_barrier;
-    pthread_barrier_init(&work_barrier, NULL, n_threads);
-
-    for (int i=0; i<n_threads; i++) {
-        particle_set_t *particle_set_i = get_particles_set(n_threads, n_particles, i);
-        workers.push_back(new Worker_barrier(i, swarm, target_func, &work_barrier, particle_set_i, epochs));
-    }
+    vector<thread> threads;
+    pthread_barrier_init(&barrier, NULL, n_threads);
 
     {
         utimer u("thread_barrier");
 
-        //run threads
-        for (auto w: workers) {
-            threads.push_back(w->run());
+        for (int i=0; i<n_threads; i++) {
+            threads.push_back(thread(compute_swarm_multi_thread, swarm, epochs, target_func, i, n_threads, n_particles));
         }
 
         //join threads
-        for (auto t: threads) {
-            t->join();
+        for (thread &t: threads) {
+            t.join();
         }
 
 //        print_swarm(swarm, target_func);
-        print_global_min(swarm, target_func);
+//		print_global_min(swarm, target_func);
     }
-    pthread_barrier_destroy(&work_barrier);
+    pthread_barrier_destroy(&barrier);
     return 0;
 }
+

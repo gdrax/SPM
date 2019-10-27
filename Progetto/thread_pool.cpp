@@ -35,8 +35,7 @@ int main(int argc, char *argv[]) {
 		utimer u("thread_barrier");
 
 		for (int i=0; i<n_threads; i++) {
-			particle_set_t *particle_set_i = get_particles_set(n_threads, n_particles, i);
-			threads.push_back(thread(compute_swarm, swarm, particle_set_i, epochs, target_func, i));
+			threads.push_back(thread(compute_swarm, swarm, epochs, target_func, i, n_particles, n_threads));
 		}
 
 		//join threads
