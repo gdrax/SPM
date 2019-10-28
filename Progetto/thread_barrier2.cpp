@@ -26,22 +26,28 @@ int main(int argc, char *argv[]) {
 
 	//initialize threads
 	vector<thread*> threads;
-	vector<Worker_barrier*> workers;
+	vector<Worker_barrier2*> workers;
 
 	pthread_barrier_t work_barrier;
-	pthread_barrier_init(&work_barrier, NULL, n_threads);
+	pthread_barrier_init(&work_barrier, NULL, n_threads+1);
+
+	int work=0;
 
 	for (int i=0; i<n_threads; i++) {
-		workers.push_back(new Worker_barrier(i, swarm, target_func, &work_barrier, n_threads, n_particles, epochs));
+		workers.push_back(new Worker_barrier2(i, swarm, target_func, &work_barrier, n_threads, n_particles, epochs, &work));
 	}
 
+	Master *master = new Master(n_threads, swarm, target_func, epochs, &work_barrier, &work);
+
 	{
-		utimer u("thread_barrier");
+		utimer u("thread_barrier2");
 
 		//run threads
 		for (auto w: workers) {
 			threads.push_back(w->run());
 		}
+
+		threads.push_back(master->run());
 
 		//join threads
 		for (auto t: threads) {

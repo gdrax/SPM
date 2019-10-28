@@ -23,6 +23,9 @@ thread_pool: threads.hpp utimer.cpp utils.hpp thread_pool.cpp
 thread_barrier: thread_barrier.cpp utimer.cpp utils.hpp threads.hpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
 
+thread_barrier2: thread_barrier2.cpp utimer.cpp utils.hpp threads.hpp
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
+
 multi_thread: multi_thread.cpp utimer.cpp utils.hpp threads.hpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
 

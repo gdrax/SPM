@@ -12,6 +12,7 @@ mutex global_min_mutex;
 pthread_barrier_t barrier;
 
 int work=0;
+int hits = 0;
 
 /**
  * Structure of a position in the search space
@@ -412,11 +413,16 @@ void compute_swarm_multi_thread(swarm_t *swarm, int epochs, string target_func, 
         work++;
         if (work == n_threads) {
             update_global(swarm, target_func);
+            hits++;
 //            cout << "barrier hitted: " << j;
             work=0;
         }
         pthread_barrier_wait(&barrier);
     }
     return;
+}
+
+void printHits() {
+	cout << "Hits: " << hits << endl;
 }
 //TODO: randomly initialize velocities, interval?
