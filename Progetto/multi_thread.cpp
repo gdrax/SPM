@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 
 //        print_swarm(swarm, target_func);
 //		print_global_min(swarm, target_func);
-//		printHits();
+//		printHits	();
     }
     pthread_barrier_destroy(&barrier);
     return 0;

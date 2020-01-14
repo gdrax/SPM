@@ -6,6 +6,8 @@ EPOCHS = 10000
 EXECUTABLE   = sequential \
 		  	   thread_pool\
 		  	   thread_barrier\
+		  	   multi_thread  \
+		  	   thread_barrier2 \
 
 #estimate the computing time of the different function making the average of 10000 runs
 func_times:

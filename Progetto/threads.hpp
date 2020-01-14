@@ -166,7 +166,7 @@ public:
 				update_global(swarm, target_func);
 				pthread_barrier_wait(barrier2);
 //				pthread_barrier_init(barrier2, NULL, n_threads+1);
-				cout << i << endl;
+//				cout << i << endl;
 			}
 //			cout << "master ends\n";
 			return;
