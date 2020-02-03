@@ -2,6 +2,8 @@
 #include <functional>
 #include <random>
 #include <mutex>
+#include <ff/ff.hpp>
+#include <ff/parallel_for.hpp>
 #include "utimer.cpp"
 
 using namespace std;
@@ -420,6 +422,42 @@ void compute_swarm_multi_thread(swarm_t *swarm, int epochs, string target_func, 
         pthread_barrier_wait(&barrier);
     }
     return;
+}
+
+/**
+ * Computes the iteration phase of the PSO
+ * @param particle_set: set of particles of the swarm assigned to the thread
+ * @param epochs: number of iterations to be computed
+ * @param target_func: function to be optimized (sphere or himmel)
+ * @param id: id of the thread
+ */
+void compute_swarm_fast_flow(swarm_t *swarm, int epochs, string target_func, int n_threads, int n_particles) {
+//	particle_set_t *particle_set = get_particles_set(n_threads, n_particles, id);
+	work++;
+	//wait for all other threads
+	if (work == n_threads) {
+		update_global(swarm, target_func);
+		work=0;
+	}
+
+	ff::ParallelFor pf(n_threads);
+	pf.parallel_for(0, epochs, 1, 0, [&](const long j) {
+//		for (int j=0; j<epochs; j++) {
+		for (int i=0; i<n_particles; i++) {
+//		pf.parallel_for(0, n_particles, 1, 0, [&](const long i) {
+			//update velocity
+			update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
+			update_position(&(swarm->particles[i]), target_func);
+			float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
+			//update local minimum
+			if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
+				swarm->particles->local_min.x = swarm->particles[i].position.x;
+				swarm->particles->local_min.y = swarm->particles[i].position.y;
+			}
+		}
+		update_global(swarm, target_func);
+	});
+	return;
 }
 
 void printHits() {

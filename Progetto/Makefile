@@ -1,13 +1,13 @@
 CXX	= g++
 CXXFLAGS = -std=c++17 -lX11
 LDFLAGS = -pthread
+FFFLAGS = -I ./fastflow
 EPOCHS = 10000
 
 EXECUTABLE   = sequential \
-		  	   thread_pool\
 		  	   thread_barrier\
 		  	   multi_thread  \
-		  	   thread_barrier2 \
+		  	   fast_flow
 
 #estimate the computing time of the different function making the average of 10000 runs
 func_times:
@@ -16,20 +16,16 @@ func_times:
 
 #compile the sequential version
 sequential: utils.hpp utimer.cpp sequential.cpp
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
-
-#compile the thread_pool version
-thread_pool: threads.hpp utimer.cpp utils.hpp thread_pool.cpp
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(FFFLAGS) $@.cpp -o $@
 
 thread_barrier: thread_barrier.cpp utimer.cpp utils.hpp threads.hpp
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
-
-thread_barrier2: thread_barrier2.cpp utimer.cpp utils.hpp threads.hpp
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(FFFLAGS) $@.cpp -o $@
 
 multi_thread: multi_thread.cpp utimer.cpp utils.hpp threads.hpp
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $@.cpp -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(FFFLAGS) $@.cpp -o $@
+
+fast_flow: fast_flow.cpp utimer.cpp utils.hpp
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(FFFLAGS) $@.cpp -o $@
 
 measure_time_local:
 	make thread_pool
