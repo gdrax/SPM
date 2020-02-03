@@ -32,7 +32,7 @@ measure_time_local:
 	./measure_time.sh 1000 100 4
 
 measure_time_phi:
-	make thread_pool
+	make thread_barrier
 	./measure_time_phi.sh 10000 1000 256
 
 #compile all
