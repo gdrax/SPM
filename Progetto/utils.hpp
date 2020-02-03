@@ -441,10 +441,10 @@ void compute_swarm_fast_flow(swarm_t *swarm, int epochs, string target_func, int
 	}
 
 	ff::ParallelFor pf(n_threads);
-	pf.parallel_for(0, epochs, 1, 0, [&](const long j) {
-//		for (int j=0; j<epochs; j++) {
-		for (int i=0; i<n_particles; i++) {
-//		pf.parallel_for(0, n_particles, 1, 0, [&](const long i) {
+//	pf.parallel_for(0, epochs, 1, 0, [&](const long j) {
+		for (int j=0; j<epochs; j++) {
+//		for (int i=0; i<n_particles; i++) {
+		pf.parallel_for(0, n_particles, 1, 0, [&](const long i) {
 			//update velocity
 			update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
 			update_position(&(swarm->particles[i]), target_func);
@@ -454,9 +454,9 @@ void compute_swarm_fast_flow(swarm_t *swarm, int epochs, string target_func, int
 				swarm->particles->local_min.x = swarm->particles[i].position.x;
 				swarm->particles->local_min.y = swarm->particles[i].position.y;
 			}
-		}
+		});
 		update_global(swarm, target_func);
-	});
+	}
 	return;
 }
 
@@ -464,3 +464,4 @@ void printHits() {
 	cout << "Hits: " << hits << endl;
 }
 //TODO: randomly initialize velocities, interval?
+//TODO: speedup fast_flow
