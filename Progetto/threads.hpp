@@ -42,7 +42,7 @@ public:
 					//update global minimum with lock
 					if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(swarm->global_min, target_func)) {
 						unique_lock <mutex> lock(global_min_mutex);
-						update_single_global(swarm, target_func, i);
+						update_single_global(swarm, swarm->particles[i].local_min);
 					}
 				}
                 pthread_barrier_wait(barrier);
@@ -72,12 +72,11 @@ public:
 	thread *run() {
 		auto body = [&] () {
 			particle_set = get_particles_set(n_threads, n_particles, id);
-			pthread_barrier_wait(barrier2);
+//			pthread_barrier_wait(barrier2);
 			for (int j=1; j<epochs; j++) {
+				position_t partial_min = swarm->particles[particle_set->start].position;
 				for (int i = particle_set->start; i <= particle_set->end; i++) {
 					update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
-				}
-				for (int i = particle_set->start; i <= particle_set->end; i++) {
 					update_position(&(swarm->particles[i]), target_func);
 					float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
 					//update local minimum
@@ -86,12 +85,13 @@ public:
 						swarm->particles->local_min.y = swarm->particles[i].position.y;
 					}
 					//update global minimum with lock
-					if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(swarm->global_min, target_func)) {
-						unique_lock <mutex> lock(global_min_mutex);
-						update_single_global(swarm, target_func, i);
+					if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(partial_min, target_func)) {
+						partial_min = swarm->particles[i].local_min;
 					}
 				};
 				pthread_barrier_wait(barrier2);
+				unique_lock <mutex> lock(global_min_mutex);
+				update_single_global(swarm, partial_min);
 			}
 			return;
 		};
