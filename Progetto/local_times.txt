@@ -1,5 +1,5 @@
 
-1 thread: 129010 usec
-2 thread: 83727 usec
-3 thread: 73727 usec
-4 thread: 60903 usec
+1 thread: 182104 usec
+2 thread: 84099 usec
+3 thread: 85396 usec
+4 thread: 66868 usec

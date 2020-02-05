@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 	{
 		utimer u("sequential");
 		compute_swarm_sequential(swarm, epochs, target_func);
-        print_global_min(swarm, target_func);
+//        print_global_min(swarm, target_func);
 	}
 	return 0;
 }

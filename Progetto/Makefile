@@ -27,8 +27,12 @@ multi_thread: multi_thread.cpp utimer.cpp utils.hpp threads.hpp
 fast_flow: fast_flow.cpp utimer.cpp utils.hpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(FFFLAGS) $@.cpp -o $@
 
+measure_time_sequential:
+	make sequential
+	./measure_sequential.sh 1000 100
+
 measure_time_local:
-	make thread_pool
+	make thread_barrier
 	./measure_time.sh 1000 100 4
 
 measure_time_phi:
