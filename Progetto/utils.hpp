@@ -479,7 +479,7 @@ void compute_swarm_fast_flow_2(swarm_t *swarm, int epochs, string target_func, i
 				//update local minimum
 				if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
 					swarm->particles->local_min.x = swarm->particles[i].position.x;
-					swarm->particles->local_min.y = swarm->particles[i].position.y;
+						swarm->particles->local_min.y = swarm->particles[i].position.y;
 				}
 				if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(partial_min, target_func)) {
 					partial_min = swarm->particles[i].local_min;
