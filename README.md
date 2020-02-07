@@ -11,8 +11,8 @@ The following default parameters for the algorithm has been choosen:
 
 Three version of the algorithm are provided:
 + Sequential version: sequential.cpp
-+ Parallel version with native C++: thread_pool.cpp
-+ Parallel version with Fast_flow: parallel_ff.cpp
++ Parallel version with native C++: multi_thread.cpp
++ Parallel version with Fast_flow: fast_flow.cpp
 
 The code can be compiled with:
 ```
@@ -23,7 +23,10 @@ then the three versions can be executed calling:
 ./sequential [target function] [initialization type] [# particles] [# iterations]
 ```
 ```
-./thread_pool [target function] [initialization type] [# particles] [# iterations] [# threads]
+./multi_thread [target function] [initialization type] [# particles] [# iterations] [# threads]
+```
+```
+./fast_flow [target function] [initialization type] [# particles] [# iterations] [# threads]
 ```
 Two target functions are available:
 + *sphere*
