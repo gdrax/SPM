@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     {
         utimer u("thread_barrier");
 
-		compute_swarm_fast_flow_2(swarm, epochs, target_func, n_threads, n_particles);
+		compute_swarm_fast_flow(swarm, epochs, target_func, n_threads, n_particles);
 
 //      print_swarm(swarm, target_func);
 //		print_global_min(swarm, target_func);
