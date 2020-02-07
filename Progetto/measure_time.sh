@@ -14,7 +14,7 @@ echo Computing $PARTICLES particles over $EPOCHS epochs...
 for ((i=1; i<THREADS+1; i++)); do
   echo ...with $i threads
   for n in {0..10}; do
-    TIME=$(($TIME+$(./thread_barrier sphere random $PARTICLES $EPOCHS $((i)))))
+    TIME=$(($TIME+$(./multi_thread sphere random $PARTICLES $EPOCHS $((i)))))
   done;
   echo $((i)) thread: $((TIME/10)) usec >> $OUTPUT
   TIME=0

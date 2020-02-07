@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 sequential_time = 130053512
-multi_thread_times = [131503867, 68501631, 34285338, 17478346, 9013803, 4972394, 4562597, 4153504, 3353392]
+multi_thread_times = [132243975, 66475635, 34874273, 17481113, 8765808, 4136962, 2315102, 2009936, 2668000]
 ff_times = [133594345, 71319961, 37079476, 19891571, 11343719, 7012673, 5248750, 5079444, 6302879]
 ideal_times = [sequential_time / 2 ** i for i in range(0, 9)]
 numbers = [1, 2, 4, 8, 16, 32, 64, 128, 256]
@@ -70,4 +70,4 @@ def plot_efficiency():
     plt.legend('True', labels=('Ideal', 'Multi-thread', 'fast-flow'))
     plt.show()
 
-plot_scalability()
+plot_efficiency()

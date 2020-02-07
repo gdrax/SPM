@@ -1,0 +1,5 @@
+
+32 thread: 20684806 usec
+64 thread: 11575510 usec
+128 thread: 10049680 usec
+256 thread: 13339996 usec
