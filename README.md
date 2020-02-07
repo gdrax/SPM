@@ -1,8 +1,8 @@
 # SPM
 Project and assignments solutions for the Parallel and Distribuited System course.
 
-# PSO
-**Implementation of the Particle Swarm Optimization algorithm.**
+# Project (Application: PSO)
+**Implementation of the Particle Swarm Optimization algorithm (https://it.wikipedia.org/wiki/Particle_Swarm_Optimization).**
 
 The following default parameters for the algorithm has been choosen:
 + Inertia weight = 0.9

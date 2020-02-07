@@ -496,4 +496,3 @@ void printHits() {
 	cout << "Hits: " << hits << endl;
 }
 //TODO: randomly initialize velocities, interval?
-//TODO: speedup fast_flow
