@@ -1,4 +1,4 @@
-#include "../bertoncini_source_code/utils.hpp"
+#include "utils.hpp"
 #include <thread>
 #include <mutex>
 #include <condition_variable>
