@@ -1,5 +1,5 @@
 CXX	= g++
-CXXFLAGS = -std=c++17 -lX11
+CXXFLAGS = -std=c++17 -lX11 -O3
 LDFLAGS = -pthread
 FFFLAGS = -I ./fastflow
 EPOCHS = 10000
