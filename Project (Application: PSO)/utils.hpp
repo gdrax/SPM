@@ -91,9 +91,9 @@ float compute_bench_fun(position_t p, string func) {
 //    if (func == "matyas") {
 //        return 0.26 * (pow(p.x, 2) + pow(p.y, 2)) - 0.48 * p.x * p.y;
 //    }
-//	if (func == "sum") {
-//		return p.x+p.y;
-//	}
+	if (func == "sum") {
+		return p.x+p.y;
+	}
     return 0;
 }
 
@@ -127,8 +127,8 @@ float bench_fun_bound(string func) {
         return himmel_domain_bound;
 //    if (func == "matyas")
 //        return matyas_domain_bound;
-//	if (func == "sum")
-//		return sum_domain_bound;
+	if (func == "sum")
+		return sum_domain_bound;
     return 0;
 }
 
@@ -266,6 +266,7 @@ void print_swarm(swarm_t *swarm, string func) {
  */
 void print_global_min(swarm_t *swarm, string func) {
     cout << "Global min: " << compute_bench_fun(swarm->global_min, func) << endl;
+    cout << "x: " << swarm->global_min.x << " y: " << swarm->global_min.y << endl;
 }
 
 /**
@@ -339,9 +340,9 @@ void compute_swarm(swarm_t *swarm, int epochs, string target_func, int id, int n
 			update_position(&(swarm->particles[i]), target_func);
 			float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
 			//update local minimum
-			if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
-				swarm->particles->local_min.x = swarm->particles[i].position.x;
-				swarm->particles->local_min.y = swarm->particles[i].position.y;
+			if (compute_bench_fun(swarm->particles[i].local_min, target_func) > func_value) {
+				swarm->particles[i].local_min.x = swarm->particles[i].position.x;
+				swarm->particles[i].local_min.y = swarm->particles[i].position.y;
 			}
 			//update global minimum with lock
 			if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(swarm->global_min, target_func)) {
@@ -370,9 +371,9 @@ void compute_swarm_sequential(swarm_t *swarm, int epochs, string target_func) {
 		for (int i=0; i<swarm->n_particles; i++) {
 			update_position(&(swarm->particles[i]), target_func);
 			float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
-			if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
-				swarm->particles->local_min.x = swarm->particles[i].position.x;
-				swarm->particles->local_min.y = swarm->particles[i].position.y;
+			if (compute_bench_fun(swarm->particles[i].local_min, target_func) > func_value) {
+				swarm->particles[i].local_min.x = swarm->particles[i].position.x;
+				swarm->particles[i].local_min.y = swarm->particles[i].position.y;
 			}
 			if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(swarm->global_min, target_func)) {
 				update_single_global(swarm, swarm->particles[i].local_min);
@@ -381,82 +382,6 @@ void compute_swarm_sequential(swarm_t *swarm, int epochs, string target_func) {
 	}
 	return;
 }
-
-///**
-// * Computes the iteration phase of the PSO
-// * @param particle_set: set of particles of the swarm assigned to the thread
-// * @param epochs: number of iterations to be computed
-// * @param target_func: function to be optimized (sphere or himmel)
-// * @param id: id of the thread
-// */
-//void compute_swarm_multi_thread(swarm_t *swarm, int epochs, string target_func, int id, int n_threads, int n_particles) {
-//    particle_set_t *particle_set = get_particles_set(n_threads, n_particles, id);
-//    work++;
-//    //wait for all other threads
-//    if (work == n_threads) {
-//        update_global(swarm, target_func);
-//        work=0;
-//    }
-//    pthread_barrier_wait(&barrier);
-//    for (int j=0; j<epochs; j++) {
-//        //update velocities
-//        for (int i = particle_set->start; i <= particle_set->end; i++) {
-//            update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
-//        }
-//        for (int i = particle_set->start; i <= particle_set->end; i++) {
-//            update_position(&(swarm->particles[i]), target_func);
-//            float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
-//            //update local minimum
-//            if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
-//                swarm->particles->local_min.x = swarm->particles[i].position.x;
-//                swarm->particles->local_min.y = swarm->particles[i].position.y;
-//            }
-//        }
-//        work++;
-//        if (work == n_threads) {
-//            update_global(swarm, target_func);
-//            hits++;
-////            cout << "barrier hitted: " << j;
-//            work=0;
-//        }
-//        pthread_barrier_wait(&barrier);
-//    }
-//    return;
-//}
-
-///**
-// * Computes the iteration phase of the PSO
-// * @param particle_set: set of particles of the swarm assigned to the thread
-// * @param epochs: number of iterations to be computed
-// * @param target_func: function to be optimized (sphere or himmel)
-// * @param id: id of the thread
-// */
-//void compute_swarm_fast_flow(swarm_t *swarm, int epochs, string target_func, int n_threads, int n_particles) {
-//	ff::ParallelFor pf(n_threads);
-//	vector < particle_set_t * > sets;
-//
-//	for (int i = 0; i < n_threads; i++) {
-//		sets.push_back(get_particles_set(n_threads, n_particles, i));
-//	}
-//
-//	for (int j=0; j<epochs; j++) {
-//		pf.parallel_for(0, sets.size(), 1, 0, [&](const long k) {
-//			for (int i=sets.at(k)->start; i<sets.at(k)->end; i++) {
-//				//update velocity
-//				update_velocity(&(swarm->particles[i]), swarm->global_min, target_func);
-//				update_position(&(swarm->particles[i]), target_func);
-//				float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
-//				//update local minimum
-//				if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
-//					swarm->particles->local_min.x = swarm->particles[i].position.x;
-//					swarm->particles->local_min.y = swarm->particles[i].position.y;
-//				}
-//			}
-//		});
-//		update_global(swarm, target_func);
-//	}
-//	return;
-//}
 
 void compute_swarm_fast_flow(swarm_t *swarm, int epochs, string target_func, int n_threads, int n_particles) {
 	ff::ParallelFor pf(n_threads);
@@ -475,9 +400,9 @@ void compute_swarm_fast_flow(swarm_t *swarm, int epochs, string target_func, int
 				update_position(&(swarm->particles[i]), target_func);
 				float func_value = compute_bench_fun(swarm->particles[i].position, target_func);
 				//update local minimum
-				if (compute_bench_fun(swarm->particles->local_min, target_func) > func_value) {
-					swarm->particles->local_min.x = swarm->particles[i].position.x;
-						swarm->particles->local_min.y = swarm->particles[i].position.y;
+				if (compute_bench_fun(swarm->particles[i].local_min, target_func) > func_value) {
+					swarm->particles[i].local_min.x = swarm->particles[i].position.x;
+						swarm->particles[i].local_min.y = swarm->particles[i].position.y;
 				}
 				if (compute_bench_fun(swarm->particles[i].local_min, target_func) < compute_bench_fun(partial_min, target_func)) {
 					partial_min = swarm->particles[i].local_min;

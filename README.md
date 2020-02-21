@@ -1,5 +1,5 @@
 # SPM
-Project and assignments solutions for the Parallel and Distribuited System course.
+Project and assignments solutions for the Parallel and Distribuited System course at University of Pisa.
 
 # Project (Application: PSO)
 **Implementation of the Particle Swarm Optimization algorithm (https://it.wikipedia.org/wiki/Particle_Swarm_Optimization).**
@@ -42,10 +42,15 @@ It's possible to get an estimate of the computing times using 1 to 4 threads cal
 ```
 make measure_time_local
 ```
-or the computing time using 1 to 256 thread proceeding by powers of two, with:
+or the computing time using 1 to 256 thread of the native C++ multi-thread version proceeding by powers of two, with:
 ```
 make measure_time_phi
 ```
-The results will be stored respectively in *local_times.txt* and *phi_times.txt*.
 
-The execution of the experiments can take quite some time since the scripts runs the algorithm more times to better estimate the computation times.
+and the same with the version that use Fast Flow with:
+```
+make measure_time_phi_ff
+```
+The results will be stored respectively in *local_times.txt*, *phi_times.txt* and *phi_ff_times.txt*.
+
+The execution of the experiments can take quite some time since the scripts runs the algorithm 10 times to better estimate the computation times.
